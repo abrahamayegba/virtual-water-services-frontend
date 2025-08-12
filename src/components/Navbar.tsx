@@ -1,14 +1,13 @@
-
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { User, Settings, LogOut, BookOpen } from 'lucide-react';
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { User, Settings, LogOut, BookOpen } from "lucide-react";
 import logo from "../assets/logo.svg";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  if (!user || location.pathname === '/') return null;
+  if (!user || location.pathname === "/") return null;
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -23,7 +22,7 @@ export default function Navbar() {
                 alt="virtual-services-logo"
               />
               <span className="text-xl font-bold text-gray-900">
-                VirtualWater
+                Virtual Water Services Ltd
               </span>
             </Link>
           </div>

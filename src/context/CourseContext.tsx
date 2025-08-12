@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 interface Lesson {
   id: string;
   title: string;
   content: string;
-  type: 'pdf' | 'video' | 'powerpoint';
+  type: "pdf" | "video" | "powerpoint";
   duration: number;
   completed: boolean;
 }
@@ -48,7 +48,7 @@ interface CourseContextType {
   getCourse: (id: string) => Course | undefined;
   updateLessonProgress: (courseId: string, lessonId: string) => void;
   completeCourse: (courseId: string, score?: number) => string;
-  createCourse: (course: Omit<Course, 'id' | 'progress' | 'completed'>) => void;
+  createCourse: (course: Omit<Course, "id" | "progress" | "completed">) => void;
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -145,14 +145,13 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
   //   }
   // ]);
 
-
   const [courses, setCourses] = useState<Course[]>([
     {
       id: "1",
-      title: "Workplace Safety Fundamentals",
+      title: "Legionella Control and Water Quality Management and Awareness",
       description:
-        "Essential safety protocols and procedures for construction sites",
-      category: "Safety",
+        "Learn how to manage water systems safely, prevent Legionella outbreaks, and maintain water quality. This course covers the health risks, legal duties, system monitoring, and practical control measures to ensure compliance and protect public health. Ideal for those responsible for water hygiene in any facility.",
+      category: "Water Hygiene",
       duration: 120,
       progress: 0,
       completed: false,
@@ -535,22 +534,24 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
 
   const [certificates, setCertificates] = useState<Certificate[]>([]);
 
-  const getCourse = (id: string) => courses.find(course => course.id === id);
+  const getCourse = (id: string) => courses.find((course) => course.id === id);
 
   const updateLessonProgress = (courseId: string, lessonId: string) => {
-    setCourses(prevCourses => 
-      prevCourses.map(course => {
+    setCourses((prevCourses) =>
+      prevCourses.map((course) => {
         if (course.id === courseId) {
-          const updatedLessons = course.lessons.map(lesson => 
+          const updatedLessons = course.lessons.map((lesson) =>
             lesson.id === lessonId ? { ...lesson, completed: true } : lesson
           );
-          const completedLessons = updatedLessons.filter(lesson => lesson.completed).length;
+          const completedLessons = updatedLessons.filter(
+            (lesson) => lesson.completed
+          ).length;
           const progress = (completedLessons / updatedLessons.length) * 100;
-          
+
           return {
             ...course,
             lessons: updatedLessons,
-            progress
+            progress,
           };
         }
         return course;
@@ -560,12 +561,12 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
 
   const completeCourse = (courseId: string, score?: number): string => {
     const certificateId = Date.now().toString();
-    const course = courses.find(c => c.id === courseId);
-    
+    const course = courses.find((c) => c.id === courseId);
+
     if (course) {
       // Update course completion
-      setCourses(prevCourses => 
-        prevCourses.map(c => 
+      setCourses((prevCourses) =>
+        prevCourses.map((c) =>
           c.id === courseId ? { ...c, completed: true, certificateId } : c
         )
       );
@@ -573,38 +574,42 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
       // Create certificate
       const certificate: Certificate = {
         id: certificateId,
-        userId: '1', // This would come from auth context
+        userId: "1", // This would come from auth context
         courseId,
         courseName: course.title,
         completedAt: new Date(),
-        score
+        score,
       };
-      
-      setCertificates(prev => [...prev, certificate]);
+
+      setCertificates((prev) => [...prev, certificate]);
     }
-    
+
     return certificateId;
   };
 
-  const createCourse = (courseData: Omit<Course, 'id' | 'progress' | 'completed'>) => {
+  const createCourse = (
+    courseData: Omit<Course, "id" | "progress" | "completed">
+  ) => {
     const newCourse: Course = {
       ...courseData,
       id: Date.now().toString(),
       progress: 0,
-      completed: false
+      completed: false,
     };
-    setCourses(prev => [...prev, newCourse]);
+    setCourses((prev) => [...prev, newCourse]);
   };
 
   return (
-    <CourseContext.Provider value={{
-      courses,
-      certificates,
-      getCourse,
-      updateLessonProgress,
-      completeCourse,
-      createCourse
-    }}>
+    <CourseContext.Provider
+      value={{
+        courses,
+        certificates,
+        getCourse,
+        updateLessonProgress,
+        completeCourse,
+        createCourse,
+      }}
+    >
       {children}
     </CourseContext.Provider>
   );
@@ -613,7 +618,7 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
 export function useCourses() {
   const context = useContext(CourseContext);
   if (context === undefined) {
-    throw new Error('useCourses must be used within a CourseProvider');
+    throw new Error("useCourses must be used within a CourseProvider");
   }
   return context;
 }
