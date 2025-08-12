@@ -7,6 +7,7 @@ interface Lesson {
   type: "pdf" | "video" | "powerpoint";
   duration: number;
   completed: boolean;
+  file?: File | string;
 }
 
 interface Quiz {
@@ -49,6 +50,8 @@ interface CourseContextType {
   updateLessonProgress: (courseId: string, lessonId: string) => void;
   completeCourse: (courseId: string, score?: number) => string;
   createCourse: (course: Omit<Course, "id" | "progress" | "completed">) => void;
+  updateCourse: (courseId: string, course: Omit<Course, "id" | "progress" | "completed">) => void;
+  deleteCourse: (courseId: string) => void;
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -599,6 +602,22 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
     setCourses((prev) => [...prev, newCourse]);
   };
 
+  const updateCourse = (
+    courseId: string,
+    courseData: Omit<Course, "id" | "progress" | "completed">
+  ) => {
+    setCourses((prev) =>
+      prev.map((course) =>
+        course.id === courseId
+          ? { ...course, ...courseData }
+          : course
+      )
+    );
+  };
+
+  const deleteCourse = (courseId: string) => {
+    setCourses((prev) => prev.filter((course) => course.id !== courseId));
+  };
   return (
     <CourseContext.Provider
       value={{
@@ -608,6 +627,8 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
         updateLessonProgress,
         completeCourse,
         createCourse,
+        updateCourse,
+        deleteCourse,
       }}
     >
       {children}

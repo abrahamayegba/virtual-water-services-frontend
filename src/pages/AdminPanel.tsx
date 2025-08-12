@@ -1,26 +1,43 @@
 import React, { useState } from 'react';
 import { useCourses } from '../context/CourseContext';
 import Navbar from '../components/Navbar';
+import FileUpload from '../components/FileUpload';
+import PDFViewer from '../components/PDFViewer';
+import VideoPlayer from '../components/VideoPlayer';
 import { Plus, BookOpen, Users, Award, Settings, Edit2, Trash2, Eye, FileText } from 'lucide-react';
 
 export default function AdminPanel() {
   const { courses, createCourse } = useCourses();
   const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'users' | 'certificates'>('overview');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showLessonForm, setShowLessonForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<string | null>(null);
   const [newCourse, setNewCourse] = useState({
     title: '',
     description: '',
     category: '',
     duration: 60,
-    lessons: []
+    lessons: [] as any[]
+  });
+  const [newLesson, setNewLesson] = useState({
+    title: '',
+    content: '',
+    type: 'pdf' as 'pdf' | 'video' | 'powerpoint',
+    duration: 30,
+    file: null as File | null
   });
 
   const handleCreateCourse = (e: React.FormEvent) => {
     e.preventDefault();
-    createCourse({
-      ...newCourse,
-      lessons: []
-    });
+    if (editingCourse) {
+      // Update existing course logic would go here
+      setEditingCourse(null);
+    } else {
+      createCourse({
+        ...newCourse,
+        lessons: newCourse.lessons
+      });
+    }
     setNewCourse({
       title: '',
       description: '',
@@ -29,6 +46,52 @@ export default function AdminPanel() {
       lessons: []
     });
     setShowCreateForm(false);
+  };
+
+  const handleAddLesson = (e: React.FormEvent) => {
+    e.preventDefault();
+    const lesson = {
+      id: Date.now().toString(),
+      ...newLesson,
+      completed: false,
+      file: newLesson.file
+    };
+    
+    setNewCourse(prev => ({
+      ...prev,
+      lessons: [...prev.lessons, lesson]
+    }));
+    
+    setNewLesson({
+      title: '',
+      content: '',
+      type: 'pdf',
+      duration: 30,
+      file: null
+    });
+    setShowLessonForm(false);
+  };
+
+  const handleRemoveLesson = (lessonId: string) => {
+    setNewCourse(prev => ({
+      ...prev,
+      lessons: prev.lessons.filter(lesson => lesson.id !== lessonId)
+    }));
+  };
+
+  const handleEditCourse = (courseId: string) => {
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+      setNewCourse({
+        title: course.title,
+        description: course.description,
+        category: course.category,
+        duration: course.duration,
+        lessons: course.lessons
+      });
+      setEditingCourse(courseId);
+      setShowCreateForm(true);
+    }
   };
 
   const tabs = [
@@ -161,14 +224,16 @@ export default function AdminPanel() {
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Create Course</span>
+                  <span>{editingCourse ? 'Edit Course' : 'Create Course'}</span>
                 </button>
               </div>
 
               {/* Create Course Form */}
               {showCreateForm && (
                 <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Course</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    {editingCourse ? 'Edit Course' : 'Create New Course'}
+                  </h2>
                   <form onSubmit={handleCreateCourse} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -218,16 +283,136 @@ export default function AdminPanel() {
                         onChange={(e) => setNewCourse(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
                       />
                     </div>
+
+                    {/* Lessons Section */}
+                    <div className="border-t pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-gray-900">Course Lessons</h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowLessonForm(true)}
+                          className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm"
+                        >
+                          Add Lesson
+                        </button>
+                      </div>
+
+                      {/* Lessons List */}
+                      {newCourse.lessons.length > 0 && (
+                        <div className="space-y-3 mb-4">
+                          {newCourse.lessons.map((lesson, index) => (
+                            <div key={lesson.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <p className="font-medium text-gray-900">{lesson.title}</p>
+                                <p className="text-sm text-gray-600">
+                                  {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)} • {lesson.duration} min
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveLesson(lesson.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add Lesson Form */}
+                      {showLessonForm && (
+                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                          <h4 className="font-medium text-gray-900 mb-3">Add New Lesson</h4>
+                          <form onSubmit={handleAddLesson} className="space-y-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Lesson Title</label>
+                                <input
+                                  type="text"
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  value={newLesson.title}
+                                  onChange={(e) => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                                <select
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  value={newLesson.type}
+                                  onChange={(e) => setNewLesson(prev => ({ ...prev, type: e.target.value as any }))}
+                                >
+                                  <option value="pdf">PDF Document</option>
+                                  <option value="video">Video</option>
+                                  <option value="powerpoint">PowerPoint/PDF Slides</option>
+                                </select>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                              <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={newLesson.duration}
+                                onChange={(e) => setNewLesson(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                              />
+                            </div>
+
+                            <FileUpload
+                              label={`Upload ${newLesson.type === 'video' ? 'Video' : 'PDF'} File`}
+                              acceptedTypes={newLesson.type === 'video' ? '.mp4,.avi,.mov,.wmv' : '.pdf'}
+                              maxSize={newLesson.type === 'video' ? 100 : 10}
+                              onFileSelect={(file) => setNewLesson(prev => ({ ...prev, file }))}
+                              currentFile={newLesson.file}
+                              onRemove={() => setNewLesson(prev => ({ ...prev, file: null }))}
+                            />
+
+                            <div className="flex space-x-3">
+                              <button
+                                type="submit"
+                                disabled={!newLesson.file}
+                                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors disabled:opacity-50"
+                              >
+                                Add Lesson
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShowLessonForm(false)}
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex space-x-4">
                       <button
                         type="submit"
                         className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition-colors"
                       >
-                        Create Course
+                        {editingCourse ? 'Update Course' : 'Create Course'}
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShowCreateForm(false)}
+                        onClick={() => {
+                          setShowCreateForm(false);
+                          setEditingCourse(null);
+                          setNewCourse({
+                            title: '',
+                            description: '',
+                            category: '',
+                            duration: 60,
+                            lessons: []
+                          });
+                        }}
                         className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors"
                       >
                         Cancel
@@ -283,7 +468,10 @@ export default function AdminPanel() {
                             <button className="text-blue-600 hover:text-blue-900">
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="text-green-600 hover:text-green-900">
+                            <button 
+                              onClick={() => handleEditCourse(course.id)}
+                              className="text-green-600 hover:text-green-900"
+                            >
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button className="text-red-600 hover:text-red-900">
