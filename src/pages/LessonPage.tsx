@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCourses } from "../context/CourseContext";
 import Navbar from "../components/Navbar";
+import PDFViewer from "../components/PDFViewer";
+import VideoPlayer from "../components/VideoPlayer";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,21 +13,13 @@ import {
   Presentation,
   Clock,
 } from "lucide-react";
-import VideoPlayer from "../components/VideoPlayer";
-import PDFViewer from "../components/PDFViewer";
 
 export default function LessonPage() {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
   const { getCourse, updateLessonProgress } = useCourses();
   const [isCompleted, setIsCompleted] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const goPrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
-  const goNext = () => {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  };
+  
   const course = getCourse(courseId!);
   const lesson = course?.lessons.find((l) => l.id === lessonId);
 
@@ -50,13 +44,6 @@ export default function LessonPage() {
       </div>
     );
   }
-
-  const slidesModules = import.meta.glob(
-    "../assets/ppt-slides/*.{png,jpg,jpeg}",
-    { eager: true }
-  );
-
-  const slides = Object.values(slidesModules).map((mod: any) => mod.default);
 
   const currentLessonIndex = course.lessons.findIndex((l) => l.id === lessonId);
   const previousLesson =
