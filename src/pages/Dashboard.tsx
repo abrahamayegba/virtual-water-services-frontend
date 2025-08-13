@@ -13,6 +13,7 @@ import {
   Presentation,
 } from "lucide-react";
 import { useState } from "react";
+import Footer from "../components/Footer";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -111,7 +112,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Continue Learning */}
@@ -177,7 +178,8 @@ export default function Dashboard() {
                 {filteredCourses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                    className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow flex flex-col"
+                    style={{ height: "100%" }}
                   >
                     <div className="mb-4">
                       <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -219,12 +221,14 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <Link
-                      to={`/course/${course.id}`}
-                      className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors text-center block"
-                    >
-                      Start Course
-                    </Link>
+                    <div className="mt-auto">
+                      <Link
+                        to={`/course/${course.id}`}
+                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors text-center block"
+                      >
+                        Start Course
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -324,6 +328,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

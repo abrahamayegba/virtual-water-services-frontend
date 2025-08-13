@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { HardHat, Shield, Award, Users, ChevronRight } from 'lucide-react';
 import logo from "../assets/logo.svg";
+import Footer from '../components/Footer';
 
 export default function Landing() {
   const { user, login, register, loading } = useAuth();
@@ -148,10 +149,12 @@ export default function Landing() {
               </h4>
               <div className="text-sm text-blue-800 space-y-1">
                 <p>
-                  <strong>Internal:</strong> dawnlawrie@waterservicesgroup.com / admin123456
+                  <strong>Internal:</strong> dawnlawrie@waterservicesgroup.com /
+                  admin123456
                 </p>
                 <p>
-                  <strong>External:</strong> petsathome@company.com / password123456
+                  <strong>External:</strong> petsathome@company.com /
+                  password123456
                 </p>
               </div>
             </div>
@@ -298,7 +301,8 @@ export default function Landing() {
         </div>
       </div>
 
-      
+      {/* Footer */}
+     <Footer/>
     </div>
   );
 }

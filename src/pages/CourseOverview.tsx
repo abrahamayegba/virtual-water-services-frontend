@@ -110,7 +110,7 @@ export default function CourseOverview() {
 
               {/* Continue/Start Button */}
               {nextLesson && (
-                <div className="mb-8">
+                <div className="">
                   <Link
                     to={`/course/${course.id}/lesson/${nextLesson.id}`}
                     className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center space-x-2"
@@ -270,32 +270,20 @@ export default function CourseOverview() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Learning Objectives
               </h3>
-              <ul className="text-sm text-gray-600 space-y-2">
-                <li className="flex items-start space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>
-                    Explain what Legionella is and how it can affect health
-                  </span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>
-                    Understand legal responsibilities and compliance
-                    requirements.
-                  </span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Identify and control risks in water systems.</span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>
-                    Apply monitoring, maintenance, and record-keeping best
-                    practices.
-                  </span>
-                </li>
-              </ul>
+              {course.objectives && course.objectives.length > 0 ? (
+                <ul className="text-sm text-gray-600 space-y-2">
+                  {course.objectives.map((objective, index) => (
+                    <li key={index} className="flex items-start space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>{objective}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No learning objectives available.
+                </p>
+              )}
             </div>
 
             {/* Support */}
