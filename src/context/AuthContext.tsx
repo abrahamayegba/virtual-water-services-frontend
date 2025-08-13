@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: '1',
       name: 'Admin User',
       email: 'dawnlawrie@waterservicesgroup.com',
-      company: 'BuildCorp',
+      company: 'VirtualWaterServices',
       contractorId: 'ADM001',
       isAdmin: true,
       password: 'admin123456'

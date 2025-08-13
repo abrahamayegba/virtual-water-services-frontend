@@ -16,8 +16,7 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
 
-  // For demo purposes, we'll use the existing slide images
-  // In production, you'd convert PDF to images or use a proper PDF viewer
+
   const totalPages = 90; // Based on the slide images available
 
   const goToPrevPage = () => {
