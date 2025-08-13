@@ -15,6 +15,8 @@ export default function Profile() {
     contractorId: user?.contractorId || ''
   });
 
+  console.log({formData})
+
   const completedCourses = courses.filter(course => course.completed);
   const inProgressCourses = courses.filter(course => course.progress > 0 && !course.completed);
   const totalStudyTime = courses.reduce((acc, course) => acc + (course.duration * course.progress / 100), 0);

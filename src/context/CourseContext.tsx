@@ -59,7 +59,6 @@ const CourseContext = createContext<CourseContextType | undefined>(undefined);
 
 export function CourseProvider({ children }: { children: React.ReactNode }) {
 
-  // const [courses, setCourses] = useState<Course[]>([
   //   {
   //     id: "1",
   //     title: "Legionella Control and Water Quality Management and Awareness",

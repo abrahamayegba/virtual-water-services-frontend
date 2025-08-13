@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
   id: string;
@@ -13,7 +13,9 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: Omit<User, 'id' | 'isAdmin'> & { password: string }) => Promise<boolean>;
+  register: (
+    userData: Omit<User, "id" | "isAdmin"> & { password: string }
+  ) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
 }
@@ -27,28 +29,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Mock users for demo (in production, this would connect to your backend)
   const mockUsers = [
     {
-      id: '1',
-      name: 'Admin User',
-      email: 'dawnlawrie@waterservicesgroup.com',
-      company: 'VirtualWaterServices',
-      contractorId: 'ADM001',
+      id: "1",
+      name: "Dawn Lawrie",
+      email: "dawnlawrie@waterservicesgroup.com",
+      company: "VirtualWaterServices",
+      contractorId: "ADM001",
       isAdmin: true,
-      password: 'admin123456'
+      password: "admin123456",
     },
     {
-      id: '2',
-      name: 'John Smith',
-      email: 'petsathome@company.com',
-      company: 'Smith Construction',
-      contractorId: 'CON002',
+      id: "2",
+      name: "John Smith",
+      email: "petsathome@company.com",
+      company: "Smith Construction",
+      contractorId: "CON002",
       isAdmin: false,
-      password: 'password123456'
-    }
+      password: "password123456",
+    },
   ];
 
   useEffect(() => {
     // Check for stored authentication
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -56,31 +58,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
+    const foundUser = mockUsers.find(
+      (u) => u.email === email && u.password === password
+    );
     if (foundUser) {
       const { password: _, ...userWithoutPassword } = foundUser;
       setUser(userWithoutPassword);
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem("user", JSON.stringify(userWithoutPassword));
       return true;
     }
     return false;
   };
 
-  const register = async (userData: Omit<User, 'id' | 'isAdmin'> & { password: string }): Promise<boolean> => {
+  const register = async (
+    userData: Omit<User, "id" | "isAdmin"> & { password: string }
+  ): Promise<boolean> => {
     // In production, this would make an API call
     const newUser: User = {
       ...userData,
       id: Date.now().toString(),
-      isAdmin: false
+      isAdmin: false,
     };
     setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem("user", JSON.stringify(newUser));
     return true;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
   return (
@@ -93,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
