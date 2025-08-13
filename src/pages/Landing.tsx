@@ -298,6 +298,113 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center mb-4">
+                <img
+                  src={logo}
+                  height={25}
+                  width={100}
+                  alt="virtual-services-logo"
+                  className="brightness-0 invert"
+                />
+                <span className="text-lg font-bold ml-2">
+                  Virtual Water Services Ltd
+                </span>
+              </div>
+              <p className="text-gray-300 mb-4 max-w-md">
+                Leading provider of professional safety training and certification 
+                programs for construction and industrial professionals.
+              </p>
+              <div className="text-sm text-gray-400">
+                <p>© 2024 Virtual Water Services Ltd. All rights reserved.</p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2 text-gray-300">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Courses
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Certification
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support & Legal */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Support & Legal</h3>
+              <ul className="space-y-2 text-gray-300">
+                <li>
+                  <a href="/support" className="hover:text-white transition-colors">
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Cookie Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Accessibility
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <div className="text-sm text-gray-400 mb-4 md:mb-0">
+              <p>Professional training platform built for safety excellence.</p>
+            </div>
+            <div className="flex space-x-6 text-sm text-gray-400">
+              <a href="#" className="hover:text-white transition-colors">
+                Status
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                API
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                Security
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       
     </div>
   );

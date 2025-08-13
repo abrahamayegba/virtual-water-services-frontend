@@ -88,24 +88,24 @@ export default function LessonPage() {
     switch (lesson.type) {
       case "video":
         return (
-          <VideoPlayer 
-            src="/src/assets/sample-video.mp4" 
+          <VideoPlayer
+            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             title={lesson.title}
           />
         );
 
       case "powerpoint":
         return (
-          <PDFViewer 
-            file="/src/assets/course.pdf" 
+          <PDFViewer
+            file="powerpoint-slides"
             title={lesson.title}
           />
         );
 
       case "pdf":
         return (
-          <PDFViewer 
-            file="/src/assets/course.pdf" 
+          <PDFViewer
+            file="pdf-document"
             title={lesson.title}
           />
         );

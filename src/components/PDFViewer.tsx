@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from 'lucide-react';
-
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   file: string | File;
@@ -11,22 +7,19 @@ interface PDFViewerProps {
 }
 
 export default function PDFViewer({ file, title }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
-    setLoading(false);
-  }
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [scale, setScale] = useState(1.0);
+  
+  // For demo purposes, we'll use the existing slide images
+  // In production, you'd convert PDF to images or use a proper PDF viewer
+  const totalPages = 90; // Based on the slide images available
+  
   const goToPrevPage = () => {
-    setPageNumber(prev => Math.max(1, prev - 1));
+    setCurrentPage(prev => Math.max(1, prev - 1));
   };
 
   const goToNextPage = () => {
-    setPageNumber(prev => Math.min(numPages, prev + 1));
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
   };
 
   const zoomIn = () => {
@@ -38,12 +31,13 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
   };
 
   const downloadPDF = () => {
-    if (typeof file === 'string') {
-      const link = document.createElement('a');
-      link.href = file;
-      link.download = title || 'document.pdf';
-      link.click();
-    }
+    // In production, this would download the actual PDF
+    alert('Download functionality would be implemented here');
+  };
+
+  // Get the slide image path
+  const getSlideImage = (pageNum: number) => {
+    return `/src/assets/ppt-slides/slide${pageNum}.png`;
   };
 
   return (
@@ -53,19 +47,19 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
         <div className="flex items-center space-x-2">
           <button
             onClick={goToPrevPage}
-            disabled={pageNumber <= 1}
+            disabled={currentPage <= 1}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           
           <span className="text-sm font-medium">
-            Page {pageNumber} of {numPages}
+            Page {currentPage} of {totalPages}
           </span>
           
           <button
             onClick={goToNextPage}
-            disabled={pageNumber >= numPages}
+            disabled={currentPage >= totalPages}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="h-4 w-4" />
@@ -91,52 +85,45 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
             <ZoomIn className="h-4 w-4" />
           </button>
 
-          {typeof file === 'string' && (
-            <button
-              onClick={downloadPDF}
-              className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              <Download className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            onClick={downloadPDF}
+            className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            <Download className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      {/* PDF Document */}
-      <div className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full overflow-auto">
-        {loading && (
-          <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        )}
-        
-        <Document
-          file={file}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading=""
-          error={
-            <div className="text-center p-8">
-              <p className="text-red-600">Failed to load PDF. Please try again.</p>
-            </div>
-          }
-        >
-          <Page 
-            pageNumber={pageNumber} 
-            scale={scale}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
+      {/* PDF/PowerPoint Content */}
+      <div className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full">
+        <div className="flex justify-center">
+          <img
+            src={getSlideImage(currentPage)}
+            alt={`Slide ${currentPage}`}
+            style={{ 
+              transform: `scale(${scale})`,
+              transformOrigin: 'center top',
+              maxWidth: '100%',
+              height: 'auto'
+            }}
+            className="rounded shadow-sm"
+            onError={(e) => {
+              // Fallback if image doesn't exist
+              const target = e.target as HTMLImageElement;
+              target.src = '/src/assets/ppt-slides/slide1.png';
+            }}
           />
-        </Document>
+        </div>
       </div>
 
       {/* Page Navigation */}
-      <div className="flex items-center space-x-2">
-        {Array.from({ length: Math.min(numPages, 10) }, (_, i) => i + 1).map(page => (
+      <div className="flex items-center space-x-2 flex-wrap justify-center">
+        {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(page => (
           <button
             key={page}
-            onClick={() => setPageNumber(page)}
+            onClick={() => setCurrentPage(page)}
             className={`w-8 h-8 rounded text-sm font-medium ${
-              page === pageNumber
+              page === currentPage
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
@@ -144,9 +131,37 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
             {page}
           </button>
         ))}
-        {numPages > 10 && (
-          <span className="text-gray-500">... +{numPages - 10} more</span>
+        {totalPages > 10 && (
+          <>
+            <span className="text-gray-500">...</span>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              className={`w-8 h-8 rounded text-sm font-medium ${
+                totalPages === currentPage
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {totalPages}
+            </button>
+          </>
         )}
+      </div>
+
+      {/* Quick Navigation */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setCurrentPage(1)}
+          className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+        >
+          First
+        </button>
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+        >
+          Last
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -13,8 +13,17 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string>('');
 
-  const videoSrc = typeof src === 'string' ? src : URL.createObjectURL(src);
+  useEffect(() => {
+    if (typeof src === 'string') {
+      setVideoSrc(src);
+    } else if (src instanceof File) {
+      const url = URL.createObjectURL(src);
+      setVideoSrc(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [src]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -85,6 +94,9 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // Fallback video for demo
+  const demoVideoSrc = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-black rounded-lg overflow-hidden shadow-lg">
       {title && (
@@ -96,12 +108,18 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
       <div className="relative">
         <video
           ref={videoRef}
-          src={videoSrc}
+          src={videoSrc || demoVideoSrc}
           className="w-full h-auto"
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onError={() => {
+            // Fallback to demo video if original fails
+            if (videoRef.current && videoSrc !== demoVideoSrc) {
+              setVideoSrc(demoVideoSrc);
+            }
+          }}
         />
         
         {/* Play/Pause Overlay */}
@@ -110,7 +128,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
           onClick={togglePlay}
         >
           {!isPlaying && (
-            <div className="bg-black bg-opacity-50 rounded-full p-4">
+            <div className="bg-black bg-opacity-50 rounded-full p-4 hover:bg-opacity-70 transition-all">
               <Play className="h-12 w-12 text-white" />
             </div>
           )}
@@ -128,7 +146,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
             max={duration || 0}
             value={currentTime}
             onChange={handleSeek}
-            className="flex-1 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+            className="flex-1 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
           />
           <span className="text-sm">{formatTime(duration)}</span>
         </div>
@@ -138,7 +156,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
           <div className="flex items-center space-x-3">
             <button
               onClick={togglePlay}
-              className="p-2 hover:bg-gray-700 rounded"
+              className="p-2 hover:bg-gray-700 rounded transition-colors"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5" />
@@ -149,7 +167,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
             
             <button
               onClick={restart}
-              className="p-2 hover:bg-gray-700 rounded"
+              className="p-2 hover:bg-gray-700 rounded transition-colors"
             >
               <RotateCcw className="h-5 w-5" />
             </button>
@@ -157,7 +175,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
             <div className="flex items-center space-x-2">
               <button
                 onClick={toggleMute}
-                className="p-2 hover:bg-gray-700 rounded"
+                className="p-2 hover:bg-gray-700 rounded transition-colors"
               >
                 {isMuted ? (
                   <VolumeX className="h-5 w-5" />
@@ -173,19 +191,39 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                className="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
               />
             </div>
           </div>
 
           <button
             onClick={toggleFullscreen}
-            className="p-2 hover:bg-gray-700 rounded"
+            className="p-2 hover:bg-gray-700 rounded transition-colors"
           >
             <Maximize className="h-5 w-5" />
           </button>
         </div>
       </div>
+
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: none;
+        }
+      `}</style>
     </div>
   );
 }
