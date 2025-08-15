@@ -1,30 +1,42 @@
-import React, { useState } from 'react';
-import { useCourses } from '../context/CourseContext';
-import Navbar from '../components/Navbar';
-import FileUpload from '../components/FileUpload';
-import PDFViewer from '../components/PDFViewer';
-import VideoPlayer from '../components/VideoPlayer';
-import { Plus, BookOpen, Users, Award, Settings, Edit2, Trash2, Eye, FileText } from 'lucide-react';
+import React, { useState } from "react";
+import { useCourses } from "../context/CourseContext";
+import Navbar from "../components/Navbar";
+import FileUpload from "../components/FileUpload";
+import PDFViewer from "../components/PDFViewer";
+import VideoPlayer from "../components/VideoPlayer";
+import {
+  Plus,
+  BookOpen,
+  Users,
+  Award,
+  Settings,
+  Edit2,
+  Trash2,
+  Eye,
+  FileText,
+} from "lucide-react";
 
 export default function AdminPanel() {
   const { courses, createCourse } = useCourses();
-  const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'users' | 'certificates'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "courses" | "users" | "certificates"
+  >("overview");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [editingCourse, setEditingCourse] = useState<string | null>(null);
   const [newCourse, setNewCourse] = useState({
-    title: '',
-    description: '',
-    category: '',
+    title: "",
+    description: "",
+    category: "",
     duration: 60,
-    lessons: [] as any[]
+    lessons: [] as any[],
   });
   const [newLesson, setNewLesson] = useState({
-    title: '',
-    content: '',
-    type: 'pdf' as 'pdf' | 'video' | 'powerpoint',
+    title: "",
+    content: "",
+    type: "pdf" as "pdf" | "video" | "powerpoint",
     duration: 30,
-    file: null as File | null
+    file: null as File | null,
   });
 
   const handleCreateCourse = (e: React.FormEvent) => {
@@ -35,15 +47,15 @@ export default function AdminPanel() {
     } else {
       createCourse({
         ...newCourse,
-        lessons: newCourse.lessons
+        lessons: newCourse.lessons,
       });
     }
     setNewCourse({
-      title: '',
-      description: '',
-      category: '',
+      title: "",
+      description: "",
+      category: "",
       duration: 60,
-      lessons: []
+      lessons: [],
     });
     setShowCreateForm(false);
   };
@@ -54,40 +66,40 @@ export default function AdminPanel() {
       id: Date.now().toString(),
       ...newLesson,
       completed: false,
-      file: newLesson.file
+      file: newLesson.file,
     };
-    
-    setNewCourse(prev => ({
+
+    setNewCourse((prev) => ({
       ...prev,
-      lessons: [...prev.lessons, lesson]
+      lessons: [...prev.lessons, lesson],
     }));
-    
+
     setNewLesson({
-      title: '',
-      content: '',
-      type: 'pdf',
+      title: "",
+      content: "",
+      type: "pdf",
       duration: 30,
-      file: null
+      file: null,
     });
     setShowLessonForm(false);
   };
 
   const handleRemoveLesson = (lessonId: string) => {
-    setNewCourse(prev => ({
+    setNewCourse((prev) => ({
       ...prev,
-      lessons: prev.lessons.filter(lesson => lesson.id !== lessonId)
+      lessons: prev.lessons.filter((lesson) => lesson.id !== lessonId),
     }));
   };
 
   const handleEditCourse = (courseId: string) => {
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
     if (course) {
       setNewCourse({
         title: course.title,
         description: course.description,
         category: course.category,
         duration: course.duration,
-        lessons: course.lessons
+        lessons: course.lessons,
       });
       setEditingCourse(courseId);
       setShowCreateForm(true);
@@ -95,41 +107,79 @@ export default function AdminPanel() {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Settings },
-    { id: 'courses', label: 'Courses', icon: BookOpen },
-    { id: 'users', label: 'Users', icon: Users },
-    { id: 'certificates', label: 'Certificates', icon: Award }
+    { id: "overview", label: "Overview", icon: Settings },
+    { id: "courses", label: "Courses", icon: BookOpen },
+    { id: "users", label: "Users", icon: Users },
+    { id: "certificates", label: "Certificates", icon: Award },
   ];
 
   const mockUsers = [
-    { id: '1', name: 'John Smith', email: 'john@contractor.com', company: 'Smith Construction', contractorId: 'CON002', status: 'Active', coursesCompleted: 2 },
-    { id: '2', name: 'Sarah Johnson', email: 'sarah@buildco.com', company: 'BuildCo Inc', contractorId: 'CON003', status: 'Active', coursesCompleted: 1 },
-    { id: '3', name: 'Mike Wilson', email: 'mike@safebuild.com', company: 'SafeBuild Ltd', contractorId: 'CON004', status: 'Pending', coursesCompleted: 0 }
+    {
+      id: "1",
+      name: "John Smith",
+      email: "john@contractor.com",
+      company: "Smith Construction",
+      contractorId: "CON002",
+      status: "Active",
+      coursesCompleted: 2,
+    },
+    {
+      id: "2",
+      name: "Sarah Johnson",
+      email: "sarah@buildco.com",
+      company: "BuildCo Inc",
+      contractorId: "CON003",
+      status: "Active",
+      coursesCompleted: 1,
+    },
+    {
+      id: "3",
+      name: "Mike Wilson",
+      email: "mike@safebuild.com",
+      company: "SafeBuild Ltd",
+      contractorId: "CON004",
+      status: "Pending",
+      coursesCompleted: 0,
+    },
   ];
 
   const mockCertificates = [
-    { id: '1', userName: 'John Smith', courseName: 'Workplace Safety Fundamentals', completedAt: '2024-01-15', score: 95 },
-    { id: '2', userName: 'Sarah Johnson', courseName: 'Equipment Operation Certification', completedAt: '2024-01-12', score: 88 }
+    {
+      id: "1",
+      userName: "John Smith",
+      courseName: "Workplace Safety Fundamentals",
+      completedAt: "2024-01-15",
+      score: 95,
+    },
+    {
+      id: "2",
+      userName: "Sarah Johnson",
+      courseName: "Equipment Operation Certification",
+      completedAt: "2024-01-12",
+      score: 88,
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="flex">
         {/* Sidebar */}
         <div className="w-64 bg-white shadow-sm border-r min-h-screen">
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Admin Panel</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Admin Panel
+            </h2>
             <nav className="space-y-2">
-              {tabs.map(tab => (
+              {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-left transition-colors ${
                     activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
                   <tab.icon className="h-5 w-5" />
@@ -142,48 +192,61 @@ export default function AdminPanel() {
 
         {/* Main Content */}
         <div className="flex-1 p-8">
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-8">Admin Overview</h1>
-              
+              <h1 className="text-2xl font-bold text-gray-900 mb-8">
+                Admin Overview
+              </h1>
+
               {/* Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                   <div className="flex items-center">
                     <BookOpen className="h-8 w-8 text-blue-500" />
                     <div className="ml-4">
-                      <h3 className="text-2xl font-bold text-gray-900">{courses.length}</h3>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {courses.length}
+                      </h3>
                       <p className="text-sm text-gray-600">Total Courses</p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                   <div className="flex items-center">
                     <Users className="h-8 w-8 text-green-500" />
                     <div className="ml-4">
-                      <h3 className="text-2xl font-bold text-gray-900">{mockUsers.length}</h3>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {mockUsers.length}
+                      </h3>
                       <p className="text-sm text-gray-600">Registered Users</p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                   <div className="flex items-center">
                     <Award className="h-8 w-8 text-purple-500" />
                     <div className="ml-4">
-                      <h3 className="text-2xl font-bold text-gray-900">{mockCertificates.length}</h3>
-                      <p className="text-sm text-gray-600">Certificates Issued</p>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {mockCertificates.length}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Certificates Issued
+                      </p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border">
                   <div className="flex items-center">
                     <FileText className="h-8 w-8 text-orange-500" />
                     <div className="ml-4">
                       <h3 className="text-2xl font-bold text-gray-900">
-                        {courses.reduce((acc, course) => acc + course.lessons.length, 0)}
+                        {courses.reduce(
+                          (acc, course) => acc + course.lessons.length,
+                          0
+                        )}
                       </h3>
                       <p className="text-sm text-gray-600">Total Lessons</p>
                     </div>
@@ -193,21 +256,29 @@ export default function AdminPanel() {
 
               {/* Recent Activity */}
               <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Recent Activity
+                </h2>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3 text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-gray-600">John Smith completed "Workplace Safety Fundamentals"</span>
+                    <span className="text-gray-600">
+                      John Smith completed "Workplace Safety Fundamentals"
+                    </span>
                     <span className="text-gray-400">2 hours ago</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-gray-600">New user Sarah Johnson registered</span>
+                    <span className="text-gray-600">
+                      New user Sarah Johnson registered
+                    </span>
                     <span className="text-gray-400">4 hours ago</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm">
                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span className="text-gray-600">Course "Equipment Safety" was updated</span>
+                    <span className="text-gray-600">
+                      Course "Equipment Safety" was updated
+                    </span>
                     <span className="text-gray-400">1 day ago</span>
                   </div>
                 </div>
@@ -215,16 +286,18 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {activeTab === 'courses' && (
+          {activeTab === "courses" && (
             <div>
               <div className="flex items-center justify-between mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Course Management
+                </h1>
                 <button
                   onClick={() => setShowCreateForm(true)}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>{editingCourse ? 'Edit Course' : 'Create Course'}</span>
+                  <span>{editingCourse ? "Edit Course" : "Create Course"}</span>
                 </button>
               </div>
 
@@ -232,27 +305,41 @@ export default function AdminPanel() {
               {showCreateForm && (
                 <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    {editingCourse ? 'Edit Course' : 'Create New Course'}
+                    {editingCourse ? "Edit Course" : "Create New Course"}
                   </h2>
                   <form onSubmit={handleCreateCourse} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Course Title
+                        </label>
                         <input
                           type="text"
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           value={newCourse.title}
-                          onChange={(e) => setNewCourse(prev => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCourse((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Category
+                        </label>
                         <select
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           value={newCourse.category}
-                          onChange={(e) => setNewCourse(prev => ({ ...prev, category: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCourse((prev) => ({
+                              ...prev,
+                              category: e.target.value,
+                            }))
+                          }
                         >
                           <option value="">Select Category</option>
                           <option value="Safety">Safety</option>
@@ -263,31 +350,47 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Description
+                      </label>
                       <textarea
                         required
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={newCourse.description}
-                        onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCourse((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Duration (minutes)
+                      </label>
                       <input
                         type="number"
                         required
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={newCourse.duration}
-                        onChange={(e) => setNewCourse(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                        onChange={(e) =>
+                          setNewCourse((prev) => ({
+                            ...prev,
+                            duration: parseInt(e.target.value),
+                          }))
+                        }
                       />
                     </div>
 
                     {/* Lessons Section */}
                     <div className="border-t pt-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-medium text-gray-900">Course Lessons</h3>
+                        <h3 className="text-lg font-medium text-gray-900">
+                          Course Lessons
+                        </h3>
                         <button
                           type="button"
                           onClick={() => setShowLessonForm(true)}
@@ -301,11 +404,18 @@ export default function AdminPanel() {
                       {newCourse.lessons.length > 0 && (
                         <div className="space-y-3 mb-4">
                           {newCourse.lessons.map((lesson, index) => (
-                            <div key={lesson.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={lesson.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div>
-                                <p className="font-medium text-gray-900">{lesson.title}</p>
+                                <p className="font-medium text-gray-900">
+                                  {lesson.title}
+                                </p>
                                 <p className="text-sm text-gray-600">
-                                  {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)} • {lesson.duration} min
+                                  {lesson.type.charAt(0).toUpperCase() +
+                                    lesson.type.slice(1)}{" "}
+                                  • {lesson.duration} min
                                 </p>
                               </div>
                               <button
@@ -323,53 +433,94 @@ export default function AdminPanel() {
                       {/* Add Lesson Form */}
                       {showLessonForm && (
                         <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                          <h4 className="font-medium text-gray-900 mb-3">Add New Lesson</h4>
-                          <form onSubmit={handleAddLesson} className="space-y-3">
+                          <h4 className="font-medium text-gray-900 mb-3">
+                            Add New Lesson
+                          </h4>
+                          <form
+                            onSubmit={handleAddLesson}
+                            className="space-y-3"
+                          >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Lesson Title</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Lesson Title
+                                </label>
                                 <input
                                   type="text"
                                   required
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   value={newLesson.title}
-                                  onChange={(e) => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
+                                  onChange={(e) =>
+                                    setNewLesson((prev) => ({
+                                      ...prev,
+                                      title: e.target.value,
+                                    }))
+                                  }
                                 />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Content Type
+                                </label>
                                 <select
                                   required
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   value={newLesson.type}
-                                  onChange={(e) => setNewLesson(prev => ({ ...prev, type: e.target.value as any }))}
+                                  onChange={(e) =>
+                                    setNewLesson((prev) => ({
+                                      ...prev,
+                                      type: e.target.value as any,
+                                    }))
+                                  }
                                 >
                                   <option value="pdf">PDF Document</option>
                                   <option value="video">Video</option>
-                                  <option value="powerpoint">PowerPoint/PDF Slides</option>
+                                  <option value="powerpoint">
+                                    PowerPoint/PDF Slides
+                                  </option>
                                 </select>
                               </div>
                             </div>
-                            
+
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Duration (minutes)
+                              </label>
                               <input
                                 type="number"
                                 required
                                 min="1"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={newLesson.duration}
-                                onChange={(e) => setNewLesson(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                                onChange={(e) =>
+                                  setNewLesson((prev) => ({
+                                    ...prev,
+                                    duration: parseInt(e.target.value),
+                                  }))
+                                }
                               />
                             </div>
 
                             <FileUpload
-                              label={`Upload ${newLesson.type === 'video' ? 'Video' : 'PDF'} File`}
-                              acceptedTypes={newLesson.type === 'video' ? '.mp4,.avi,.mov,.wmv' : '.pdf'}
-                              maxSize={newLesson.type === 'video' ? 100 : 10}
-                              onFileSelect={(file) => setNewLesson(prev => ({ ...prev, file }))}
-                              currentFile={newLesson.file}
-                              onRemove={() => setNewLesson(prev => ({ ...prev, file: null }))}
+                              label={`Upload ${
+                                newLesson.type === "video" ? "Video" : "PDF"
+                              } File`}
+                              acceptedTypes={
+                                newLesson.type === "video"
+                                  ? ".mp4,.avi,.mov,.wmv"
+                                  : ".pdf"
+                              }
+                              maxSize={newLesson.type === "video" ? 100 : 10}
+                              onFileSelect={(file) =>
+                                setNewLesson((prev) => ({ ...prev, file }))
+                              }
+                              currentFile={newLesson.file!}
+                              onRemove={() =>
+                                setNewLesson((prev) => ({
+                                  ...prev,
+                                  file: null,
+                                }))
+                              }
                             />
 
                             <div className="flex space-x-3">
@@ -398,7 +549,7 @@ export default function AdminPanel() {
                         type="submit"
                         className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition-colors"
                       >
-                        {editingCourse ? 'Update Course' : 'Create Course'}
+                        {editingCourse ? "Update Course" : "Create Course"}
                       </button>
                       <button
                         type="button"
@@ -406,11 +557,11 @@ export default function AdminPanel() {
                           setShowCreateForm(false);
                           setEditingCourse(null);
                           setNewCourse({
-                            title: '',
-                            description: '',
-                            category: '',
+                            title: "",
+                            description: "",
+                            category: "",
                             duration: 60,
-                            lessons: []
+                            lessons: [],
                           });
                         }}
                         className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors"
@@ -425,27 +576,45 @@ export default function AdminPanel() {
               {/* Courses Table */}
               <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-6 border-b">
-                  <h2 className="text-lg font-medium text-gray-900">All Courses</h2>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    All Courses
+                  </h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lessons</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Course
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Duration
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Lessons
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {courses.map(course => (
+                      {courses.map((course) => (
                         <tr key={course.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{course.title}</div>
-                              <div className="text-sm text-gray-500">{course.description}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {course.title}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {course.description}
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -468,7 +637,7 @@ export default function AdminPanel() {
                             <button className="text-blue-600 hover:text-blue-900">
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleEditCourse(course.id)}
                               className="text-green-600 hover:text-green-900"
                             >
@@ -487,33 +656,53 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {activeTab === 'users' && (
+          {activeTab === "users" && (
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-8">User Management</h1>
-              
+              <h1 className="text-2xl font-bold text-gray-900 mb-8">
+                User Management
+              </h1>
+
               <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-6 border-b">
-                  <h2 className="text-lg font-medium text-gray-900">Registered Users</h2>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Registered Users
+                  </h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contractor ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courses</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Company
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Contractor ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Courses
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {mockUsers.map(user => (
+                      {mockUsers.map((user) => (
                         <tr key={user.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {user.email}
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -526,18 +715,26 @@ export default function AdminPanel() {
                             {user.coursesCompleted}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              user.status === 'Active' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                user.status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
                               {user.status}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">View</button>
-                            <button className="text-green-600 hover:text-green-900">Edit</button>
-                            <button className="text-red-600 hover:text-red-900">Suspend</button>
+                            <button className="text-blue-600 hover:text-blue-900">
+                              View
+                            </button>
+                            <button className="text-green-600 hover:text-green-900">
+                              Edit
+                            </button>
+                            <button className="text-red-600 hover:text-red-900">
+                              Suspend
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -548,27 +745,41 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {activeTab === 'certificates' && (
+          {activeTab === "certificates" && (
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-8">Certificate Management</h1>
-              
+              <h1 className="text-2xl font-bold text-gray-900 mb-8">
+                Certificate Management
+              </h1>
+
               <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-6 border-b">
-                  <h2 className="text-lg font-medium text-gray-900">Issued Certificates</h2>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Issued Certificates
+                  </h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Course
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Completed
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Score
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {mockCertificates.map(cert => (
+                      {mockCertificates.map((cert) => (
                         <tr key={cert.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {cert.userName}
@@ -583,9 +794,15 @@ export default function AdminPanel() {
                             {cert.score}%
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">View</button>
-                            <button className="text-green-600 hover:text-green-900">Download</button>
-                            <button className="text-red-600 hover:text-red-900">Revoke</button>
+                            <button className="text-blue-600 hover:text-blue-900">
+                              View
+                            </button>
+                            <button className="text-green-600 hover:text-green-900">
+                              Download
+                            </button>
+                            <button className="text-red-600 hover:text-red-900">
+                              Revoke
+                            </button>
                           </td>
                         </tr>
                       ))}
