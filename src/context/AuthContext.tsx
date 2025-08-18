@@ -22,35 +22,35 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo users for testing
+const DEMO_USERS = [
+  {
+    id: "1",
+    name: "Dawn Lawrie",
+    email: "dawnlawrie@waterservicesgroup.com",
+    password: "admin123456",
+    company: "Water Services Group",
+    contractorId: "WSG001",
+    isAdmin: true,
+  },
+  {
+    id: "2",
+    name: "John Smith",
+    email: "petsathome@company.com",
+    password: "password123456",
+    company: "Pets at Home",
+    contractorId: "PAH002",
+    isAdmin: false,
+  },
+];
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock users for demo (in production, this would connect to your backend)
-  const mockUsers = [
-    {
-      id: "1",
-      name: "Dawn Lawrie",
-      email: "dawnlawrie@waterservicesgroup.com",
-      company: "VirtualWaterServices",
-      contractorId: "ADM001",
-      isAdmin: true,
-      password: "admin123456",
-    },
-    {
-      id: "2",
-      name: "John Smith",
-      email: "petsathome@company.com",
-      company: "Smith Construction",
-      contractorId: "CON002",
-      isAdmin: false,
-      password: "password123456",
-    },
-  ];
-
   useEffect(() => {
-    // Check for stored authentication
-    const storedUser = localStorage.getItem("user");
+    // Check for stored user on mount
+    const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -58,39 +58,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find(
+    const demoUser = DEMO_USERS.find(
       (u) => u.email === email && u.password === password
     );
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
+
+    if (demoUser) {
+      const { password: _, ...userWithoutPassword } = demoUser;
       setUser(userWithoutPassword);
-      localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
       return true;
     }
+
+    // Check registered users from localStorage
+    const registeredUsers = JSON.parse(
+      localStorage.getItem("registeredUsers") || "[]"
+    );
+    const registeredUser = registeredUsers.find(
+      (u: any) => u.email === email && u.password === password
+    );
+
+    if (registeredUser) {
+      const { password: _, ...userWithoutPassword } = registeredUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
+      return true;
+    }
+
     return false;
   };
 
   const register = async (
     userData: Omit<User, "id" | "isAdmin"> & { password: string }
   ): Promise<boolean> => {
-    // In production, this would make an API call
-    const newUser: User = {
-      ...userData,
-      id: Date.now().toString(),
-      isAdmin: false,
-    };
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-    return true;
+    try {
+      const registeredUsers = JSON.parse(
+        localStorage.getItem("registeredUsers") || "[]"
+      );
+
+      // Check if user already exists
+      if (registeredUsers.some((u: any) => u.email === userData.email)) {
+        return false;
+      }
+
+      const newUser = {
+        ...userData,
+        id: Date.now().toString(),
+        isAdmin: false,
+      };
+
+      registeredUsers.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
+
+      // Auto-login after registration
+      const { password: _, ...userWithoutPassword } = newUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
+
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("currentUser");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
