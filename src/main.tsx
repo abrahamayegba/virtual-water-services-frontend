@@ -3,8 +3,18 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
+import { pdfjs } from "react-pdf";
+import { Toaster } from './components/ui/sonner.tsx';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
+
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
+    <Toaster />
   </StrictMode>
 );

@@ -84,159 +84,6 @@ export default function LessonPage() {
     }
   };
 
-  // const renderContent = () => {
-  //   switch (lesson.type) {
-  //     case "video":
-  //       return (
-  //         <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
-  //           <div className="text-white text-center">
-  //             <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
-  //             <p className="text-lg">Video Content</p>
-  //             <p className="text-sm opacity-75">
-  //               Duration: {lesson.duration} minutes
-  //             </p>
-  //             <p className="text-xs opacity-50 mt-2">
-  //               In a production environment, this would embed your actual video
-  //               content
-  //             </p>
-  //           </div>
-  //         </div>
-  //       );
-
-  //     case "powerpoint":
-  //       // return (
-  //       //   <div className="bg-gray-100 rounded-lg p-8 min-h-96 flex flex-col items-center justify-center">
-  //       //     <Presentation className="h-16 w-16 text-gray-400 mb-4" />
-  //       //     <h3 className="text-xl font-semibold text-gray-900 mb-2">{lesson.title}</h3>
-  //       //     <p className="text-gray-600 text-center mb-6 max-w-2xl">
-  //       //       This lesson covers important concepts related to {lesson.title.toLowerCase()}.
-  //       //       In a production environment, your PowerPoint presentation would be converted to an interactive format or embedded directly.
-  //       //     </p>
-  //       //     <div className="bg-white p-6 rounded-lg shadow-sm w-full max-w-2xl">
-  //       //       <h4 className="font-semibold text-gray-900 mb-3">Key Topics Covered:</h4>
-  //       //       <ul className="space-y-2 text-gray-700">
-  //       //         <li className="flex items-center space-x-2">
-  //       //           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-  //       //           <span>Safety protocols and procedures</span>
-  //       //         </li>
-  //       //         <li className="flex items-center space-x-2">
-  //       //           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-  //       //           <span>Equipment operation guidelines</span>
-  //       //         </li>
-  //       //         <li className="flex items-center space-x-2">
-  //       //           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-  //       //           <span>Risk assessment techniques</span>
-  //       //         </li>
-  //       //         <li className="flex items-center space-x-2">
-  //       //           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-  //       //           <span>Best practice examples</span>
-  //       //         </li>
-  //       //       </ul>
-  //       //     </div>
-  //       //   </div>
-  //       // );
-
-  //       // return (
-  //       //   <div className="overflow-x-auto flex space-x-6">
-  //       //     {slides.map((src, i) => (
-  //       //       <img
-  //       //         key={i}
-  //       //         src={src}
-  //       //         alt={`Slide ${i + 1}`}
-  //       //         className="max-h-[500px] object-contain rounded-md shadow-md"
-  //       //       />
-  //       //     ))}
-  //       //   </div>
-  //       // );
-
-  //       return (
-  //         <div className="flex flex-col items-center space-y-6">
-  //           <div className="relative w-full max-w-4xl flex items-center justify-center">
-  //             <button
-  //               onClick={goPrev}
-  //               className="absolute left-0 z-10 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition"
-  //               aria-label="Previous slide"
-  //             >
-  //               ‹
-  //             </button>
-
-  //             <img
-  //               src={slides[currentSlide]}
-  //               alt={`Slide ${currentSlide + 1}`}
-  //               className="max-h-[600px] object-contain rounded-md shadow-md mx-8"
-  //             />
-
-  //             <button
-  //               onClick={goNext}
-  //               className="absolute right-0 z-10 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition"
-  //               aria-label="Next slide"
-  //             >
-  //               ›
-  //             </button>
-  //           </div>
-  //           <p className="text-gray-700 text-sm">
-  //             Slide {currentSlide + 1} of {slides.length}
-  //           </p>
-  //         </div>
-  //       );
-
-  //     case "pdf":
-  //       return (
-  //         <div className="bg-white border rounded-lg p-8 min-h-96">
-  //           <div className="text-center mb-8">
-  //             <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-  //             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-  //               {lesson.title}
-  //             </h3>
-  //             <p className="text-gray-600">
-  //               PDF Document - {lesson.duration} minutes read
-  //             </p>
-  //           </div>
-
-  //           <div className="prose max-w-none">
-  //             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-  //               Document Content
-  //             </h4>
-  //             <p className="text-gray-700 mb-4">
-  //               This document provides comprehensive information about{" "}
-  //               {lesson.title.toLowerCase()}. In a production environment, you
-  //               would embed or display the actual PDF content here.
-  //             </p>
-
-  //             <div className="bg-gray-50 p-6 rounded-lg">
-  //               <h5 className="font-medium text-gray-900 mb-3">
-  //                 Summary of Key Points:
-  //               </h5>
-  //               <div className="space-y-3 text-gray-700">
-  //                 <p>• Understanding safety requirements and regulations</p>
-  //                 <p>• Proper identification and documentation procedures</p>
-  //                 <p>• Step-by-step implementation guidelines</p>
-  //                 <p>• Common challenges and solutions</p>
-  //                 <p>• Quality assurance and verification methods</p>
-  //               </div>
-  //             </div>
-
-  //             <p className="text-gray-700 mt-4">
-  //               Take your time to review all the material thoroughly. This
-  //               information is crucial for successful completion of the course
-  //               and your safety certification.
-  //             </p>
-  //           </div>
-  //         </div>
-  //       );
-
-  //     default:
-  //       return (
-  //         <div className="bg-gray-100 rounded-lg p-8 min-h-96 flex items-center justify-center">
-  //           <div className="text-center">
-  //             <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-  //             <p className="text-lg text-gray-600">Content not available</p>
-  //           </div>
-  //         </div>
-  //       );
-  //   }
-  // };
-
   const renderContent = () => {
     switch (lesson.type) {
       case "video":
@@ -248,10 +95,10 @@ export default function LessonPage() {
         );
 
       case "powerpoint":
-        return <PDFViewer file="powerpoint-slides" title={lesson.title} />;
+        return <PDFViewer file="/legionella-course.pdf" title={lesson.title} />;
 
       case "pdf":
-        return <PDFViewer file="pdf-document" title={lesson.title} />;
+        return <PDFViewer file="/legionella-course.pdf" title={lesson.title} />;
 
       default:
         return (
@@ -264,6 +111,7 @@ export default function LessonPage() {
         );
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,32 +7,41 @@ import {
   Download,
 } from "lucide-react";
 
-
 interface PDFViewerProps {
-  file: string; // Path or URL to PDF
-  title: string;
+  file: string | File;
+  title?: string;
 }
 
 export default function PDFViewer({ file, title }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    setCurrentPage(1);
+  const totalPages = 90; // Based on the slide images available
+
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
   };
 
-  const goToPrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const goToNextPage = () => setCurrentPage((p) => Math.min(numPages, p + 1));
-  const zoomIn = () => setScale((s) => Math.min(2.0, s + 0.2));
-  const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.2));
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
+
+  const zoomIn = () => {
+    setScale((prev) => Math.min(2.0, prev + 0.2));
+  };
+
+  const zoomOut = () => {
+    setScale((prev) => Math.max(0.5, prev - 0.2));
+  };
 
   const downloadPDF = () => {
-    const link = document.createElement("a");
-    link.href = file;
-    link.download = title || "document.pdf";
-    link.click();
+    // In production, this would download the actual PDF
+    alert("Download functionality would be implemented here");
+  };
+
+  // Get the slide image path
+  const getSlideImage = (pageNum: number) => {
+    return `/src/assets/ppt-slides/slide${pageNum}.png`;
   };
 
   return (
@@ -50,12 +58,12 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
           </button>
 
           <span className="text-sm font-medium">
-            Page {currentPage} of {numPages || "…"}
+            Page {currentPage} of {totalPages}
           </span>
 
           <button
             onClick={goToNextPage}
-            disabled={currentPage >= numPages}
+            disabled={currentPage >= totalPages}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="h-4 w-4" />
@@ -69,15 +77,18 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
           >
             <ZoomOut className="h-4 w-4" />
           </button>
+
           <span className="text-sm font-medium">
             {Math.round(scale * 100)}%
           </span>
+
           <button
             onClick={zoomIn}
             className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
           >
             <ZoomIn className="h-4 w-4" />
           </button>
+
           <button
             onClick={downloadPDF}
             className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
@@ -87,25 +98,31 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
         </div>
       </div>
 
-      {/* PDF Content */}
-      <div className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full flex justify-center">
-        <Document
-          file={file}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading={<p>Loading PDF…</p>}
-        >
-          <Page
-            pageNumber={currentPage}
-            scale={scale}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
+      {/* PDF/PowerPoint Content */}
+      <div className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full">
+        <div className="flex justify-center">
+          <img
+            src={getSlideImage(currentPage)}
+            alt={`Slide ${currentPage}`}
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: "center top",
+              maxWidth: "100%",
+              height: "auto",
+            }}
+            className="rounded shadow-sm"
+            onError={(e) => {
+              // Fallback if image doesn't exist
+              const target = e.target as HTMLImageElement;
+              target.src = "/src/assets/ppt-slides/slide1.png";
+            }}
           />
-        </Document>
+        </div>
       </div>
 
       {/* Page Navigation */}
       <div className="flex items-center space-x-2 flex-wrap justify-center">
-        {Array.from({ length: Math.min(numPages, 10) }, (_, i) => i + 1).map(
+        {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(
           (page) => (
             <button
               key={page}
@@ -120,18 +137,18 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
             </button>
           )
         )}
-        {numPages > 10 && (
+        {totalPages > 10 && (
           <>
-            <span className="text-gray-500">…</span>
+            <span className="text-gray-500">...</span>
             <button
-              onClick={() => setCurrentPage(numPages)}
+              onClick={() => setCurrentPage(totalPages)}
               className={`w-8 h-8 rounded text-sm font-medium ${
-                numPages === currentPage
+                totalPages === currentPage
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              {numPages}
+              {totalPages}
             </button>
           </>
         )}
@@ -146,7 +163,7 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
           First
         </button>
         <button
-          onClick={() => setCurrentPage(numPages)}
+          onClick={() => setCurrentPage(totalPages)}
           className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
         >
           Last

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
+import { toast } from "sonner";
 import {
   Phone,
   Mail,
@@ -61,10 +62,13 @@ export default function Support() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, this would send the form to your support system
-    alert(
-      "Thank you for your message! Our support team will get back to you within 24 hours."
-    );
+    toast("Request submitted!", {
+      description: "Support will get back to you within 24hrs",
+      action: {
+        label: "X",
+        onClick: () => {},
+      },
+    });
     setContactForm({
       name: "",
       email: "",
@@ -304,11 +308,10 @@ export default function Support() {
                 Watch Videos
               </button>
             </div>
-
           </div>
         </div>
       </main>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
