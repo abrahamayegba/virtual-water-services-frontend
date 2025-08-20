@@ -4,8 +4,6 @@ import { toast } from "sonner";
 import {
   Phone,
   Mail,
-  FileText,
-  HelpCircle,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -132,7 +130,7 @@ export default function Support() {
           </div>
 
           {/* Contact Form */}
-          <div>
+          <div className=" mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Contact Support
             </h2>
@@ -278,7 +276,7 @@ export default function Support() {
         </div>
 
         {/* Additional Resources */}
-        <div className="mt-16 mb-8">
+        {/* <div className="mt-16 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
             Additional Resources
           </h2>
@@ -309,7 +307,7 @@ export default function Support() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </main>
       <Footer />
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCourses } from "../context/CourseContext";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +10,6 @@ import {
   Share,
   Calendar,
   Search,
-  Filter,
   Eye,
   FileText,
 } from "lucide-react";
@@ -19,7 +18,6 @@ export default function CertificatesPage() {
   const { certificates } = useCourses();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCertificate, setSelectedCertificate] = useState<string | null>(
     null
   );

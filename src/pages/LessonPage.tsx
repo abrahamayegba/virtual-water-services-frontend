@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCourses } from "../context/CourseContext";
 import Navbar from "../components/Navbar";
@@ -58,18 +58,26 @@ export default function LessonPage() {
     setIsCompleted(true);
   };
 
-  const handleNext = () => {
-    if (nextLesson) {
-      navigate(`/course/${courseId}/lesson/${nextLesson.id}`);
+  useEffect(() => {
+    const lesson = course.lessons.find((l) => l.id === lessonId);
+    setIsCompleted(lesson?.completed ?? false);
+  }, [lessonId, course.lessons]);
+
+const handleNext = () => {
+  if (nextLesson) {
+    navigate(`/course/${courseId}/lesson/${nextLesson.id}`);
+  } else {
+    const allCompleted = course.lessons.every(
+      (l) => l.completed || (l.id === lessonId && isCompleted)
+    );
+    if (course.quiz && allCompleted) {
+      navigate(`/course/${courseId}/quiz`);
     } else {
-      // All lessons completed, check if quiz exists
-      if (course.quiz) {
-        navigate(`/course/${courseId}/quiz`);
-      } else {
-        navigate(`/course/${courseId}`);
-      }
+      navigate(`/course/${courseId}`);
     }
-  };
+  }
+};
+
 
   const getContentIcon = (type: string) => {
     switch (type) {
@@ -220,7 +228,18 @@ export default function LessonPage() {
                   {(lesson.completed || isCompleted) && (
                     <button
                       onClick={handleNext}
-                      className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
+                      disabled={
+                        !nextLesson &&
+                        course.quiz &&
+                        !course.lessons.every((l) => l.completed)
+                      }
+                      className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                        !nextLesson &&
+                        course.quiz &&
+                        !course.lessons.every((l) => l.completed)
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-blue-500 text-white hover:bg-blue-600"
+                      }`}
                     >
                       <span>
                         {nextLesson

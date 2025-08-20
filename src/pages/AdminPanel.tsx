@@ -16,15 +16,11 @@ import {
   Presentation,
   Save,
   X,
-  Upload,
   Download,
   Search,
   Filter,
   MoreVertical,
-  Calendar,
   TrendingUp,
-  AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 
 interface NewCourse {

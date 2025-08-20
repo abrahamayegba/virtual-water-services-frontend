@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page } from "react-pdf";
 import {
   ChevronLeft,
   ChevronRight,

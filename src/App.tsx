@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CertificatesPage from "./pages/CertificatesPage";
+import Accreditations from "./pages/Accreditations";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/accreditations" element={<Accreditations />} />
               <Route
                 path="/dashboard"
                 element={

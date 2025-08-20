@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { HardHat, Shield, Award, Users, ChevronRight } from "lucide-react";
-import logo from "../assets/logo.svg";
+import { HardHat, Shield, Award, Users } from "lucide-react";
+import logo from "/logo.svg";
 import Footer from "../components/Footer";
 
 export default function Landing() {
@@ -59,7 +59,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      {/* <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-1">
             <div className="flex items-center">
@@ -75,6 +75,33 @@ export default function Landing() {
             </div>
             <div className="text-sm text-gray-600">
               Professional Training for Teams
+            </div>
+          </div>
+        </div>
+      </header> */}
+
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-1">
+            <div className="flex items-center">
+              <img
+                src={logo}
+                height={30}
+                width={120}
+                alt="virtual-services-logo"
+              />
+              <span className="text-2xl font-bold text-gray-900">
+                Virtual Water Services Ltd
+              </span>
+            </div>
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <Link
+                to="/accreditations"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Accreditations
+              </Link>
+              <span>Professional Training for Teams</span>
             </div>
           </div>
         </div>

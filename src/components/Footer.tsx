@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="flex flex-col items-center space-y-4">
           {/* Links */}
           <div className="flex flex-wrap justify-center items-center space-x-8 text-sm text-gray-600">
-            <Link to="#" className="hover:text-gray-900 transition-colors">
+            <Link to="/accreditations" className="hover:text-gray-900 transition-colors">
               Accreditations
             </Link>
             <Link

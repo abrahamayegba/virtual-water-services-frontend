@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-slot": "^1.2.3",
     "@react-pdf/renderer": "^4.3.0",
     "@tailwindcss/vite": "^4.1.12",
     "@types/react-router-dom": "^5.3.3",

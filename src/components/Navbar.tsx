@@ -1,8 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { User, Settings, LogOut, BookOpen } from "lucide-react";
-import logo from "../assets/logo.svg";
-
+import logo from "/logo.svg";
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -40,7 +39,6 @@ export default function Navbar() {
               <BookOpen className="h-4 w-4" />
               <span>Dashboard</span>
             </Link>
-
             <Link
               to="/profile"
               className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors
@@ -53,7 +51,6 @@ export default function Navbar() {
               <User className="h-4 w-4" />
               <span>Profile</span>
             </Link>
-
             {user.isAdmin && (
               <Link
                 to="/admin"
@@ -68,7 +65,6 @@ export default function Navbar() {
                 <span>Admin</span>
               </Link>
             )}
-
             <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{user.name}</p>
