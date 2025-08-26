@@ -287,7 +287,7 @@ export default function TermsOfService() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> legal@virtualwaterservices.co.uk
+                  <strong>Email:</strong> support@virtualwaterservices.co.uk
                 </p>
                 <p className="text-gray-700">
                   <strong>Phone:</strong> 03300 243222

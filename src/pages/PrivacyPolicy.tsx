@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Shield, Eye, Lock, Database, Users, Mail } from "lucide-react";
+import { Shield, Eye, Database, Users, Mail } from "lucide-react";
 
 export default function PrivacyPolicy() {
   return (
@@ -203,7 +203,7 @@ export default function PrivacyPolicy() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p>
-                  <strong>Email:</strong> DPO@virtualservicesgroup.co.uk
+                  <strong>Email:</strong> support@virtualservicesgroup.co.uk
                 </p>
                 <p>
                   <strong>Phone:</strong> 03300 243222
@@ -274,7 +274,7 @@ export default function PrivacyPolicy() {
                 If you have questions about this Privacy Policy, contact us at:
               </p>
               <p className="text-gray-700 mt-2">
-                <strong>Email:</strong> info@virtualservicesgroup.co.uk
+                <strong>Email:</strong> support@virtualservicesgroup.co.uk
               </p>
             </section>
           </div>

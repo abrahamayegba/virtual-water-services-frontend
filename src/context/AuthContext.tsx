@@ -26,15 +26,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const DEMO_USERS = [
   {
     id: "1",
-    name: "Dawn Lawrie",
-    email: "dawnlawrie@waterservicesgroup.com",
+    name: "Abraham Ayegba",
+    email: "abraham.ayegba@virtualservicesgroup.co.uk",
     password: "admin123456",
-    company: "Water Services Group",
+    company: "Virtual Services Group",
     contractorId: "WSG001",
     isAdmin: true,
   },
   {
     id: "2",
+    name: "Dawn Lawrie",
+    email: "dawnlawrie@waterservicesgroup.com",
+    password: "admin123456",
+    company: "Water Services Group",
+    contractorId: "WSG002",
+    isAdmin: true,
+  },
+  {
+    id: "3",
     name: "John Smith",
     email: "petsathome@company.com",
     password: "password123456",
