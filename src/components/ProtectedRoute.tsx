@@ -25,7 +25,7 @@ export default function ProtectedRoute({
     return <Navigate to="/" replace />;
   }
 
-  if (requireAdmin && !user.isAdmin) {
+  if (requireAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 

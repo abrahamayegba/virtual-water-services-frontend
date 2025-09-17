@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useCourses } from "../context/CourseContext";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -8,129 +7,65 @@ import {
   Award,
   Download,
   Share,
-  Calendar,
   Search,
   Eye,
   FileText,
 } from "lucide-react";
+import { Company, UserCourse } from "@/types/types";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useUserCourses } from "@/hooks/useUserCourses";
+import { useCompanies } from "@/hooks/useGetCompanies&Roles";
+import { CertificatePreview } from "@/components/CertificatePreview";
+import { handleDownload, handleShare } from "@/lib/utils";
 
 export default function CertificatesPage() {
-  const { certificates } = useCourses();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCertificate, setSelectedCertificate] = useState<string | null>(
     null
   );
 
-  const filteredCertificates = certificates.filter((cert) => {
-    const matchesSearch = cert.courseName
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  const userCoursesQuery = useUserCourses(user?.id!);
 
-  const handleDownload = (certificate: any) => {
-    const element = document.createElement("a");
-    const file = new Blob(
-      [
-        `CERTIFICATE OF COMPLETION\n\n` +
-          `Course: ${certificate.courseName}\n` +
-          `Awarded to: ${user?.name}\n` +
-          `Company: ${user?.company}\n` +
-          `Contractor ID: ${user?.contractorId}\n` +
-          `Date: ${certificate.completedAt.toLocaleDateString()}\n` +
-          `Score: ${certificate.score || "N/A"}%\n` +
-          `Certificate ID: ${certificate.id}\n\n` +
-          `This certificate verifies successful completion of safety training requirements.`,
-      ],
-      { type: "text/plain" }
-    );
-    element.href = URL.createObjectURL(file);
-    element.download = `certificate-${certificate.courseName
-      .replace(/\s+/g, "-")
-      .toLowerCase()}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
+  const userCourses = userCoursesQuery.data?.userCourses ?? [];
 
-  const handleShare = async (certificate: any) => {
-    const shareData = {
-      title: `Safety Training Certificate - ${certificate.courseName}`,
-      text: `I've completed the ${certificate.courseName} course and earned my safety certification!`,
-      url: `${window.location.origin}/certificate/${certificate.id}`,
-    };
+  const companiesQuery = useCompanies();
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log("Error sharing:", err);
-      }
-    } else {
-      navigator.clipboard.writeText(shareData.url);
-      alert("Certificate link copied to clipboard!");
-    }
-  };
+  const companiesData = companiesQuery.data;
 
-  const CertificatePreview = ({ certificate }: { certificate: any }) => (
-    <div className="bg-white border-4 border-blue-500 rounded-lg p-8 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
-      <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+  const userCompany = companiesData?.companies.find(
+    (c: Company) => c.id === user?.companyId
+  );
 
-      <div className="text-center">
-        <Award className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-          CERTIFICATE OF COMPLETION
-        </h3>
-        <p className="text-gray-600 mb-4">Safety Training Certification</p>
+  const companyName = userCompany?.companyName ?? "";
 
-        <p className="text-gray-700 mb-2">This is to certify that</p>
-        <h4 className="text-xl font-bold text-blue-600 mb-2">{user?.name}</h4>
-        <p className="text-gray-700 mb-4">
-          has successfully completed the course
-        </p>
+  if (userCoursesQuery.isLoading || companiesQuery.isLoading)
+    return <LoadingScreen />;
 
-        <h5 className="text-lg font-bold text-gray-900 mb-4">
-          "{certificate.courseName}"
-        </h5>
+  const certificates = (userCourses || [])
+    .filter((userCourse: UserCourse) => userCourse.completed)
+    .map((userCourse: UserCourse) => ({
+      id: userCourse.course.id,
+      courseName: userCourse.course.title,
+      completedAt: userCourse.completedAt
+        ? new Date(userCourse.completedAt)
+        : new Date(),
+      score: userCourse.score,
+    }));
 
-        <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-4">
-          <div className="text-center">
-            <Calendar className="h-4 w-4 mx-auto mb-1" />
-            <p className="font-medium">Date Completed</p>
-            <p>{certificate.completedAt.toLocaleDateString()}</p>
-          </div>
+  const filteredCertificates = certificates.filter((cert: any) =>
+    cert.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-          {certificate.score && (
-            <div className="text-center">
-              <Award className="h-4 w-4 mx-auto mb-1" />
-              <p className="font-medium">Score</p>
-              <p>{certificate.score}%</p>
-            </div>
-          )}
-
-          <div className="text-center">
-            <FileText className="h-4 w-4 mx-auto mb-1" />
-            <p className="font-medium">Certificate ID</p>
-            <p className="font-mono text-xs">{certificate.id}</p>
-          </div>
-        </div>
-
-        <div className="border-t pt-4">
-          <p className="text-sm text-gray-600">Virtual Water Services Ltd</p>
-          <p className="text-xs text-gray-500">Certification Authority</p>
-        </div>
-      </div>
-    </div>
+  const selectedCert = certificates.find(
+    (c: any) => c.id === selectedCertificate
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             My Certificates
@@ -140,7 +75,6 @@ export default function CertificatesPage() {
           </p>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -179,14 +113,13 @@ export default function CertificatesPage() {
           </div>
         ) : (
           <>
-            {/* Certificates Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Certificates List */}
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Your Certificates ({filteredCertificates.length})
                 </h2>
-                {filteredCertificates.map((certificate) => (
+                {filteredCertificates.map((certificate: any) => (
                   <div
                     key={certificate.id}
                     className={`bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow cursor-pointer ${
@@ -228,7 +161,7 @@ export default function CertificatesPage() {
                           <Eye className="h-4 w-4" />
                         </button>
                         <Link
-                          to={`/certificate/${certificate.id}`}
+                          to={`/certificate?userId=${user?.id}&courseId=${selectedCert?.id}`}
                           className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                           title="View Full Certificate"
                           onClick={(e) => e.stopPropagation()}
@@ -238,15 +171,19 @@ export default function CertificatesPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-x-4">
                       <div className="text-xs text-gray-500">
-                        Certificate ID: {certificate.id}
+                        Certificate ID: <br /> {certificate.id}
                       </div>
                       <div className="flex space-x-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDownload(certificate);
+                            handleDownload(
+                              certificate,
+                              user?.name!,
+                              companyName
+                            );
                           }}
                           className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors flex items-center space-x-1"
                         >
@@ -269,7 +206,6 @@ export default function CertificatesPage() {
                 ))}
               </div>
 
-              {/* Certificate Preview */}
               <div className="sticky top-8">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   Certificate Preview
@@ -277,13 +213,14 @@ export default function CertificatesPage() {
                 {selectedCertificate ? (
                   <div className="space-y-4">
                     <CertificatePreview
-                      certificate={certificates.find(
-                        (c) => c.id === selectedCertificate
-                      )}
+                      userName={user?.name!}
+                      certificate={
+                        certificates.find((c) => c.id === selectedCertificate)!
+                      }
                     />
                     <div className="flex space-x-2">
                       <Link
-                        to={`/certificate/${selectedCertificate}`}
+                        to={`/certificate?userId=${user?.id}&courseId=${selectedCert?.id}`}
                         className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-center"
                       >
                         View Full Certificate
@@ -292,8 +229,10 @@ export default function CertificatesPage() {
                         onClick={() =>
                           handleDownload(
                             certificates.find(
-                              (c) => c.id === selectedCertificate
-                            )
+                              (c: any) => c.id === selectedCertificate
+                            ),
+                            user?.name!,
+                            companyName
                           )
                         }
                         className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"

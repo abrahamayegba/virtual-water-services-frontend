@@ -177,7 +177,6 @@ export default function Accreditations() {
           </div> */}
         </div>
 
-        {/* Why Accreditations Matter */}
         <div className="bg-white rounded-lg shadow-sm border p-8 mb-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Why Our Accreditations Matter

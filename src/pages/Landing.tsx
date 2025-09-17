@@ -1,85 +1,23 @@
-import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { HardHat, Shield, Award, Users } from "lucide-react";
 import logo from "/logo.svg";
 import Footer from "../components/Footer";
+import AuthForm from "@/components/AuthForm";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Landing() {
   const { user, loading } = useAuth();
-  const { login, register } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    company: "",
-    contractorId: "",
-  });
-  const [error, setError] = useState("");
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    <LoadingScreen />;
   }
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (isLogin) {
-      const success = await login(formData.email, formData.password);
-      if (!success) {
-        setError("Invalid email or password");
-      }
-    } else {
-      if (!formData.name || !formData.company || !formData.contractorId) {
-        setError("Please fill in all fields");
-        return;
-      }
-      const success = await register({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        company: formData.company,
-        contractorId: formData.contractorId,
-      });
-      if (!success) {
-        setError("Registration failed. Email may already exist.");
-      }
-    }
-  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      {/* <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-1">
-            <div className="flex items-center">
-              <img
-                src={logo}
-                height={30}
-                width={120}
-                alt="virtual-services-logo"
-              />
-              <span className="text-2xl font-bold text-gray-900">
-                Virtual Water Services Ltd
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Professional Training for Teams
-            </div>
-          </div>
-        </div>
-      </header> */}
-
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-1">
@@ -106,9 +44,7 @@ export default function Landing() {
           </div>
         </div>
       </header>
-
-      <div className="flex">
-        {/* Hero Section */}
+      <div className="flex border-t border-gray-200">
         <div className="flex-1 px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-12">
@@ -120,8 +56,6 @@ export default function Landing() {
                 contractors, site workers, and safety professionals
               </p>
             </div>
-
-            {/* Features Grid */}
             <div className="grid md:grid-cols-2 gap-6 mb-12">
               <div className="bg-white p-6 rounded-lg shadow-sm border">
                 <Shield className="h-12 w-12 text-orange-500 mb-4" />
@@ -164,161 +98,10 @@ export default function Landing() {
                 </p>
               </div>
             </div>
-
-            {/* Demo Credentials */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-8">
-              <h4 className="font-semibold text-blue-900 mb-2">
-                Demo Credentials
-              </h4>
-              <div className="text-sm text-blue-800 space-y-1">
-                <p>
-                  <strong>Internal:</strong> dawnlawrie@waterservicesgroup.com /
-                  admin123456
-                </p>
-                <p>
-                  <strong>External:</strong> petsathome@company.com /
-                  password123456
-                </p>
-              </div>
-            </div>
           </div>
         </div>
-
-        {/* Login/Register Form */}
-        <div className="w-full max-w-md bg-white shadow-xl border-l">
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {isLogin ? "Welcome Back" : "Get Started"}
-              </h2>
-              <p className="text-gray-600 mt-2">
-                {isLogin
-                  ? "Sign in to continue your training"
-                  : "Create your account to begin"}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      password: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-
-              {!isLogin && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={formData.company}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          company: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contractor ID
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={formData.contractorId}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          contractorId: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                {isLogin ? "Sign In" : "Sign Up"}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-blue-600 hover:text-blue-500 text-sm font-medium"
-              >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AuthForm />
       </div>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

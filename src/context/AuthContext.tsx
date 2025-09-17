@@ -1,130 +1,55 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  contractorId: string;
-  isAdmin: boolean;
-  avatar?: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (
-    userData: Omit<User, "id" | "isAdmin"> & { password: string }
-  ) => Promise<boolean>;
-  logout: () => void;
-  loading: boolean;
-}
+import { AuthContextType, User } from "@/types/types";
+import authService, { setAccessToken } from "@/services/authService";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Demo users for testing
-const DEMO_USERS = [
-  {
-    id: "1",
-    name: "Abraham Ayegba",
-    email: "abraham.ayegba@virtualservicesgroup.co.uk",
-    password: "admin123456",
-    company: "Virtual Services Group",
-    contractorId: "WSG001",
-    isAdmin: true,
-  },
-  {
-    id: "2",
-    name: "Dawn Lawrie",
-    email: "dawnlawrie@waterservicesgroup.com",
-    password: "admin123456",
-    company: "Water Services Group",
-    contractorId: "WSG002",
-    isAdmin: true,
-  },
-  {
-    id: "3",
-    name: "John Smith",
-    email: "petsathome@company.com",
-    password: "password123456",
-    company: "Pets at Home",
-    contractorId: "PAH002",
-    isAdmin: false,
-  },
-];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user on mount
     const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const storedToken = localStorage.getItem("accessToken");
+
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedToken) setAccessToken(storedToken); // restore token
+
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const demoUser = DEMO_USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (demoUser) {
-      const { password: _, ...userWithoutPassword } = demoUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-      return true;
+    try {
+      const res = await authService.loginUser(email, password);
+      if (res.success && res.user) {
+        setUser(res.user);
+        localStorage.setItem("currentUser", JSON.stringify(res.user));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Login failed", err);
+      return false;
     }
-
-    // Check registered users from localStorage
-    const registeredUsers = JSON.parse(
-      localStorage.getItem("registeredUsers") || "[]"
-    );
-    const registeredUser = registeredUsers.find(
-      (u: any) => u.email === email && u.password === password
-    );
-
-    if (registeredUser) {
-      const { password: _, ...userWithoutPassword } = registeredUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-      return true;
-    }
-
-    return false;
   };
 
-  const register = async (
-    userData: Omit<User, "id" | "isAdmin"> & { password: string }
-  ): Promise<boolean> => {
+  const register = async (userData: {
+    name: string;
+    email: string;
+    password: string;
+    companyId: string;
+    roleId: string;
+  }): Promise<boolean> => {
     try {
-      const registeredUsers = JSON.parse(
-        localStorage.getItem("registeredUsers") || "[]"
-      );
-
-      // Check if user already exists
-      if (registeredUsers.some((u: any) => u.email === userData.email)) {
-        return false;
+      const res = await authService.registerUser(userData);
+      if (res.success && res.user) {
+        setUser(res.user);
+        localStorage.setItem("currentUser", JSON.stringify(res.user));
+        return true;
       }
-
-      const newUser = {
-        ...userData,
-        id: Date.now().toString(),
-        isAdmin: false,
-      };
-
-      registeredUsers.push(newUser);
-      localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
-
-      // Auto-login after registration
-      const { password: _, ...userWithoutPassword } = newUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-
-      return true;
-    } catch (error) {
+      return false;
+    } catch (err) {
+      console.error("Registration failed", err);
       return false;
     }
   };
@@ -132,17 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("currentUser");
+    authService.logoutUser(); // optional: call your backend to revoke refresh tokens
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        logout,
-        loading,
-      }}
+      value={{ user, setUser, loading, login, register, logout }}
     >
       {children}
     </AuthContext.Provider>
@@ -151,8 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }

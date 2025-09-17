@@ -7,11 +7,7 @@ import {
   Maximize,
   RotateCcw,
 } from "lucide-react";
-
-interface VideoPlayerProps {
-  src: string | File;
-  title?: string;
-}
+import { VideoPlayerProps } from "@/types/types";
 
 export default function VideoPlayer({ src, title }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -102,7 +98,7 @@ export default function VideoPlayer({ src, title }: VideoPlayerProps) {
   };
 
   // Fallback video for demo
-  const demoVideoSrc = "https://www.youtube.com/watch?v=TLFP9roW0Z0";
+  const demoVideoSrc = "https://media.w3.org/2010/05/sintel/trailer.mp4";
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-black rounded-lg overflow-hidden shadow-lg">

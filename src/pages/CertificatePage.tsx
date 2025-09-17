@@ -1,24 +1,46 @@
-import { useParams, Link } from 'react-router-dom';
-import { useCourses } from '../context/CourseContext';
-import { useAuth } from '../context/AuthContext';
-import Navbar from '../components/Navbar';
-import { Award, Download, Share, Calendar, User, FileText } from 'lucide-react';
+import { Link, useSearchParams } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import { Award, Download, Share, Calendar, FileText } from "lucide-react";
+import { Lesson } from "@/types/types";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useUserCourseByCourseId } from "@/hooks/useUserCourses";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CertificatePage() {
-  const { certificateId } = useParams();
-  const { certificates } = useCourses();
   const { user } = useAuth();
-  
-  const certificate = certificates.find(cert => cert.id === certificateId);
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
 
-  if (!certificate) {
+  const { data: userCourseResponse, isLoading: userCourseLoading } =
+    useUserCourseByCourseId(user?.id!, courseId!);
+
+  const userCourse = userCourseResponse?.userCourse;
+
+  const course = userCourse?.course;
+
+  const lessons = course?.Lessons;
+
+  const certificate = {
+    courseName: course?.title || "the course",
+    completedAt: new Date(),
+    score: userCourse?.score,
+    id: user?.id,
+  };
+
+  if (userCourseLoading) return <LoadingScreen />;
+  if (!userCourse) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Certificate not found</h1>
-            <Link to="/dashboard" className="text-blue-500 hover:text-blue-600 mt-4 inline-block">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Certificate not found
+            </h1>
+            <Link
+              to="/dashboard"
+              className="text-blue-500 hover:text-blue-600 mt-4 inline-block"
+            >
               Return to Dashboard
             </Link>
           </div>
@@ -29,8 +51,15 @@ export default function CertificatePage() {
 
   const handleDownload = () => {
     // In a real app, this would generate and download a PDF
-    const element = document.createElement('a');
-    const file = new Blob([`Certificate: ${certificate.courseName}\nAwarded to: ${user?.name}\nDate: ${certificate.completedAt.toLocaleDateString()}`], {type: 'text/plain'});
+    const element = document.createElement("a");
+    const file = new Blob(
+      [
+        `Certificate: ${certificate.courseName}\nAwarded to: ${
+          user?.name
+        }\nDate: ${certificate.completedAt.toLocaleDateString()}`,
+      ],
+      { type: "text/plain" }
+    );
     element.href = URL.createObjectURL(file);
     element.download = `certificate-${certificate.id}.txt`;
     document.body.appendChild(element);
@@ -47,21 +76,32 @@ export default function CertificatePage() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Error sharing:', err);
+        console.log("Error sharing:", err);
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
-      alert('Certificate link copied to clipboard!');
+      alert("Certificate link copied to clipboard!");
     }
   };
+
+  const completedAt = userCourse.completedAt
+    ? new Date(userCourse.completedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
             <Award className="h-8 w-8 text-green-600" />
@@ -74,19 +114,15 @@ export default function CertificatePage() {
           </p>
         </div>
 
-        {/* Certificate */}
         <div className="bg-white shadow-2xl border border-gray-300 rounded-2xl p-12 mb-8 relative overflow-hidden max-w-4xl mx-auto">
-          {/* Decorative edges */}
           <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
           <div className="absolute bottom-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
 
-          {/* Watermark logo in background */}
           <div className="absolute inset-0 flex items-center justify-center opacity-5">
             <img src="/logo.png" alt="Virtual Water Logo" className="w-96" />
           </div>
 
           <div className="text-center relative z-10">
-            {/* Logo & Title */}
             <div className="mb-8">
               <img
                 src="/logo.svg"
@@ -98,7 +134,6 @@ export default function CertificatePage() {
               </h2>
             </div>
 
-            {/* Recipient */}
             <div className="mb-6">
               <p className="text-lg text-gray-700 mb-2">
                 This is to certify that
@@ -111,76 +146,51 @@ export default function CertificatePage() {
               </p>
             </div>
 
-            {/* Course Info */}
             <div className="mb-8">
               <h4 className="text-2xl font-semibold text-gray-900 mb-3">
-                {/* "{certificate.courseName}" */}
-                Legionella awareness training
+                {/* {userCourse.course.title}  */}
+                Virtual Water Training
               </h4>
               <span>on</span>
-              <p className="text-blue-600 max-w-2xl font-medium mx-auto mt-2">
-                {/* "{certificate.courseName}" */}
-                To Aid the Implementation of Systems for the Effective
-                Management and Control Of Legionellosis with Water Systems
+              <p className="text-blue-600 max-w-2xl font-bold text-2xl mx-auto mt-2">
+                {/* {userCourse.course.description} */}
+                {userCourse.course.title}
               </p>
             </div>
 
-            {/* Training Content Covered */}
             <div className="mb-12 text-left max-w-3xl mx-auto">
               <h4 className="text-xl font-bold text-gray-900 mb-4">
                 Training Content Covered
               </h4>
               <ul className="list-disc list-inside space-y-2 text-gray-700">
-                <li>Health & Safety Commission & Executive ACOP</li>
-                <li>HSG274 Parts 2 & 3 and Guidance L8</li>
-                <li>
-                  “Legionnaires Disease – The Control of Legionella Bacteria in
-                  Water Systems”
-                </li>
-                <li>
-                  Understanding Legionnaires Disease, System Design & Operation
-                </li>
-                <li>
-                  Monitoring & Testing of Types of Systems; Monitoring Control
-                  Scheme
-                </li>
-                <li>
-                  Safe Operation of Systems and the Importance of Flushing
-                  Unused / Underused Outlets
-                </li>
+                {lessons?.map((lesson: Lesson) => (
+                  <li key={lesson.id}>{lesson.title}</li>
+                ))}
               </ul>
             </div>
 
-            {/* Details */}
             <div className="flex justify-center items-center space-x-16 mb-12 text-sm text-gray-600">
               <div className="text-center">
                 <Calendar className="h-6 w-6 mx-auto mb-2 text-gray-400" />
                 <p className="font-medium">Date Completed</p>
-                <p>
-                  {certificate.completedAt.toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
+                <p>{completedAt}</p>
               </div>
 
-              {certificate.score && (
+              {userCourse.score && (
                 <div className="text-center">
                   <Award className="h-6 w-6 mx-auto mb-2 text-gray-400" />
                   <p className="font-medium">Final Score</p>
-                  <p>{certificate.score}%</p>
+                  <p>{userCourse.score}%</p>
                 </div>
               )}
 
               <div className="text-center">
                 <FileText className="h-6 w-6 mx-auto mb-2 text-gray-400" />
                 <p className="font-medium">Certificate ID</p>
-                <p className="font-mono">{certificate.id}</p>
+                <p className="font-mono">{userCourse.id}</p>
               </div>
             </div>
 
-            {/* Signature & Authority */}
             <div className="border-t border-gray-300 pt-8 flex justify-between items-center">
               <div className="text-start flex flex-col gap-y-3">
                 <p className="font-medium">
@@ -191,7 +201,6 @@ export default function CertificatePage() {
                   <span className="text-gray-800">Water Hygiene Manager</span>
                 </p>
               </div>
-
             </div>
           </div>
         </div>
@@ -221,7 +230,6 @@ export default function CertificatePage() {
           </Link>
         </div>
 
-        {/* Certificate Details */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Certificate Details
@@ -233,22 +241,20 @@ export default function CertificatePage() {
             </div>
             <div>
               <p className="text-gray-600">Course</p>
-              <p className="font-medium">{certificate.courseName}</p>
+              <p className="font-medium">{userCourse.course.title}</p>
             </div>
             <div>
               <p className="text-gray-600">Completed</p>
-              <p className="font-medium">
-                {certificate.completedAt.toLocaleDateString()}
-              </p>
+              <p className="font-medium">{completedAt}</p>
             </div>
             <div>
               <p className="text-gray-600">Certificate ID</p>
-              <p className="font-medium font-mono">{certificate.id}</p>
+              <p className="font-medium font-mono">{userCourse.id}</p>
             </div>
-            {certificate.score && (
+            {userCourse.score && (
               <div>
                 <p className="text-gray-600">Score</p>
-                <p className="font-medium">{certificate.score}%</p>
+                <p className="font-medium">{userCourse.score}%</p>
               </div>
             )}
             <div>
@@ -256,8 +262,8 @@ export default function CertificatePage() {
               <p className="font-medium">Virtual Water Services Ltd</p>
             </div>
             <div>
-              <p className="text-gray-600">Contractor ID</p>
-              <p className="font-medium">{user?.contractorId}</p>
+              <p className="text-gray-600">User ID</p>
+              <p className="font-medium">{user?.id}</p>
             </div>
             <div>
               <p className="text-gray-600">Valid</p>

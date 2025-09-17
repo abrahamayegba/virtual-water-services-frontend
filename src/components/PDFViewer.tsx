@@ -1,44 +1,27 @@
-import { useState } from "react";
 import { Document, Page } from "react-pdf";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Download,
-} from "lucide-react";
-
-
-interface PDFViewerProps {
-  file: string; // Path or URL to PDF
-  title: string;
-}
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import LoadingScreen from "./LoadingScreen";
+import { PDFViewerProps } from "@/types/types";
+import { usePdfViewer } from "@/hooks/usePdfViewer";
 
 export default function PDFViewer({ file, title }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.0);
-
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    setCurrentPage(1);
-  };
-
-  const goToPrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const goToNextPage = () => setCurrentPage((p) => Math.min(numPages, p + 1));
-  const zoomIn = () => setScale((s) => Math.min(2.0, s + 0.2));
-  const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.2));
-
-  const downloadPDF = () => {
-    const link = document.createElement("a");
-    link.href = file;
-    link.download = title || "document.pdf";
-    link.click();
-  };
+  const {
+    numPages,
+    currentPage,
+    containerRef,
+    onDocumentLoadSuccess,
+    goToNextPage,
+    inFullscreen,
+    isFullscreen,
+    pageWidth,
+    setCurrentPage,
+    downloadPDF,
+    goToPrevPage,
+    toggleFullscreen,
+  } = usePdfViewer(file, title);
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      {/* Controls */}
       <div className="flex items-center justify-between w-full max-w-4xl bg-gray-100 p-4 rounded-lg">
         <div className="flex items-center space-x-2">
           <button
@@ -62,45 +45,64 @@ export default function PDFViewer({ file, title }: PDFViewerProps) {
           </button>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
+          {/* Fullscreen toggle button */}
           <button
-            onClick={zoomOut}
-            className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            onClick={toggleFullscreen}
+            className="p-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
           >
-            <ZoomOut className="h-4 w-4" />
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </button>
-          <span className="text-sm font-medium">
-            {Math.round(scale * 100)}%
-          </span>
-          <button
-            onClick={zoomIn}
-            className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
+
           <button
             onClick={downloadPDF}
             className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
-            <Download className="h-4 w-4" />
+            Download
           </button>
         </div>
       </div>
-
-      {/* PDF Content */}
-      <div className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full flex justify-center">
+      <div
+        ref={containerRef}
+        className="border rounded-lg shadow-lg bg-white p-4 max-w-4xl w-full flex justify-center relative"
+        style={{ height: isFullscreen ? "100vh" : undefined, overflow: "auto" }}
+      >
         <Document
           file={file}
           onLoadSuccess={onDocumentLoadSuccess}
-          loading={<p>Loading PDF…</p>}
+          loading={<LoadingScreen />}
         >
           <Page
             pageNumber={currentPage}
-            scale={scale}
+            width={pageWidth}
             renderAnnotationLayer={false}
             renderTextLayer={false}
+            className="relative z-0" // explicitly make canvas lower
           />
         </Document>
+
+        {/* Fullscreen prev/next buttons */}
+        {inFullscreen() && (
+          <>
+            <button
+              onClick={goToPrevPage}
+              disabled={currentPage <= 1}
+              className="fixed top-1/2 left-4 transform -translate-y-1/2 z-50 w-14 h-14 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+              aria-label="Previous page"
+            >
+              &lt;
+            </button>
+
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage >= numPages}
+              className="fixed top-1/2 right-4 transform -translate-y-1/2 z-50 w-14 h-14 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+              aria-label="Next page"
+            >
+              &gt;
+            </button>
+          </>
+        )}
       </div>
 
       {/* Page Navigation */}

@@ -1,14 +1,6 @@
 import React, { useCallback } from "react";
 import { Upload, File, X } from "lucide-react";
-
-interface FileUploadProps {
-  onFileSelect: (file: File) => void;
-  acceptedTypes: string;
-  maxSize?: number; // in MB
-  currentFile?: File | string;
-  onRemove?: () => void;
-  label: string;
-}
+import { FileUploadProps } from "@/types/types";
 
 export default function FileUpload({
   onFileSelect,

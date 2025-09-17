@@ -1,49 +1,166 @@
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useCourses } from '../context/CourseContext';
-import Navbar from '../components/Navbar';
-import { User, Mail, Building, CreditCard, Award, BookOpen, Clock, Save, Edit2 } from 'lucide-react';
+import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
+import {
+  User,
+  Mail,
+  Award,
+  BookOpen,
+  Clock,
+  Landmark,
+  UserCog,
+  Save,
+  Edit,
+  X,
+} from "lucide-react";
+import { useCompanies, useRoles } from "@/hooks/useGetCompanies&Roles";
+import { Certificate, Company, Lesson, Role, UserCourse } from "@/types/types";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useUserCourseLessons, useUserCourses } from "@/hooks/useUserCourses";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import AccountStatus from "@/components/AccountStatus";
+import ProfileQuickActions from "@/components/ProfileQuickActions";
+import { updateUser } from "@/api/users";
+import { toast } from "sonner";
 
 export default function Profile() {
-  const { user } = useAuth();
-  const { courses, certificates } = useCourses();
+  const { user, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    company: user?.company || '',
-    contractorId: user?.contractorId || ''
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+  const [loading, setLoading] = useState(false);
+  const companiesQuery = useCompanies();
+  const rolesQuery = useRoles();
+
+  const isLoading = companiesQuery.isLoading || rolesQuery.isLoading;
+
+  const companiesData = companiesQuery.data;
+  const rolesData = rolesQuery.data;
+
+  const userCompany = companiesData?.companies.find(
+    (c: Company) => c.id === user?.companyId
+  );
+  const userRole = rolesData?.roles.find((r: Role) => r.id === user?.roleId);
+
+  const companyName = userCompany?.companyName ?? "";
+  const roleName = userRole?.roleName ?? "";
+
+  const userCoursesQuery = useUserCourses(user?.id!);
+  const userCourses = userCoursesQuery.data?.userCourses ?? [];
+
+  const lessonsResponses = useUserCourseLessons(userCourses);
+  const userProgressByCourse = useMemo(() => {
+    const progress: Record<string, Lesson[]> = {};
+    lessonsResponses.forEach((res, i) => {
+      const courseId = userCourses[i]?.id;
+      if (courseId) progress[courseId] = res.data?.lessons ?? [];
+    });
+    return progress;
+  }, [lessonsResponses, userCourses]);
+
+  const lessonsData: Record<string, Lesson[]> = {};
+  userCourses.forEach((uc) => {
+    lessonsData[uc.id] = userProgressByCourse[uc.id] ?? [];
   });
 
-  console.log({formData})
+  const inProgressCourses = userCourses.filter((uc) => {
+    if (uc.completed) return false;
+    const lessons = userProgressByCourse[uc.id] ?? [];
+    const hasStarted = lessons.some(
+      (lesson) => lesson.progress?.completed === true
+    );
+    return hasStarted;
+  });
 
-  const completedCourses = courses.filter(course => course.completed);
-  const inProgressCourses = courses.filter(course => course.progress > 0 && !course.completed);
-  const totalStudyTime = courses.reduce((acc, course) => acc + (course.duration * course.progress / 100), 0);
+  const completedCourses = userCourses.filter((uc) => uc.completed);
 
-  const handleSave = () => {
-    // In production, this would update the user profile via API
-    setIsEditing(false);
+  const certificates: Certificate[] = completedCourses.map((course) => ({
+    id: course.courseId,
+    courseName: course.course.title,
+    completedAt: new Date(),
+    score: course.score,
+  }));
+
+  const totalStudyTime = userCourses
+    .filter((course) => course.completed)
+    .reduce((acc, course) => acc + course.course.duration, 0);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const updated = await updateUser(user?.id!, {
+        name: formData.name,
+        email: formData.email,
+      });
+      setUser(updated.user);
+      setIsEditing(false);
+      toast("Profile updated successfully!", {
+        description: "Your profile information has been saved.",
+        action: {
+          label: "Close",
+          onClick: () => {},
+        },
+      });
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Failed to update profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Info */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-lg shadow-sm border p-8">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Profile Information</h1>
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  <Edit2 className="h-4 w-4" />
-                  <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
-                </button>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Profile Information
+                </h1>
+
+                {isEditing ? (
+                  <div className="space-x-2">
+                    <button
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {loading ? (
+                        "Saving..."
+                      ) : (
+                        <Save className="h-4 w-4 inline mr-1" />
+                      )}
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-3 py-1 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                    >
+                      <X className="h-4 w-4 inline mr-1" />
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                  >
+                    <Edit className="h-4 w-4 inline mr-1" />
+                    Edit
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -55,12 +172,15 @@ export default function Profile() {
                   {isEditing ? (
                     <input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      name="name"
                       value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     />
                   ) : (
-                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{user?.name}</p>
+                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                      {user?.name}
+                    </p>
                   )}
                 </div>
 
@@ -72,121 +192,113 @@ export default function Profile() {
                   {isEditing ? (
                     <input
                       type="email"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      name="email"
                       value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     />
                   ) : (
-                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{user?.email}</p>
+                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                      {user?.email}
+                    </p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Building className="h-4 w-4 inline mr-2" />
+                    <Landmark className="h-4 w-4 inline mr-2" />
                     Company
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={formData.company}
-                      onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                    />
-                  ) : (
-                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{user?.company}</p>
-                  )}
+                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                    {companyName}
+                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <CreditCard className="h-4 w-4 inline mr-2" />
-                    Contractor ID
+                    <UserCog className="h-4 w-4 inline mr-2" />
+                    Role
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={formData.contractorId}
-                      onChange={(e) => setFormData(prev => ({ ...prev, contractorId: e.target.value }))}
-                    />
-                  ) : (
-                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{user?.contractorId}</p>
-                  )}
+                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                    {roleName}
+                  </p>
                 </div>
               </div>
-
-              {isEditing && (
-                <div className="mt-6 flex space-x-4">
-                  <button
-                    onClick={handleSave}
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    <span>Save Changes</span>
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Learning Progress */}
             <div className="bg-white rounded-lg shadow-sm border p-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Learning Progress</h2>
-              
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Learning Progress
+              </h2>
+
               <div className="space-y-6">
-                {/* Completed Courses */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Completed Courses</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Completed Courses
+                  </h3>
                   {completedCourses.length > 0 ? (
                     <div className="space-y-3">
-                      {completedCourses.map(course => (
-                        <div key={course.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                      {completedCourses.map((course: UserCourse) => (
+                        <Link
+                          to={`/certificate?userId=${user?.id}&courseId=${course.courseId}`}
+                          key={course.id}
+                          className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200"
+                        >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                               <Award className="h-4 w-4 text-white" />
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{course.title}</p>
-                              <p className="text-sm text-gray-600">{course.category}</p>
+                              <p className="font-medium text-gray-900">
+                                {course.course.title}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {course.course.category?.categoryName}
+                              </p>
                             </div>
                           </div>
                           <div className="text-sm text-green-700">
                             <p>Completed</p>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-600">No courses completed yet. Start your first course today!</p>
+                    <p className="text-gray-600">
+                      No courses completed yet. Start your first course today!
+                    </p>
                   )}
                 </div>
 
                 {/* In Progress Courses */}
                 {inProgressCourses.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Courses in Progress</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Courses in Progress
+                    </h3>
                     <div className="space-y-3">
-                      {inProgressCourses.map(course => (
-                        <div key={course.id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      {inProgressCourses.map((course) => (
+                        <div
+                          key={course.id}
+                          className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
+                        >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                               <BookOpen className="h-4 w-4 text-white" />
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{course.title}</p>
-                              <p className="text-sm text-gray-600">{course.category}</p>
+                              <p className="font-medium text-gray-900">
+                                {course.course.title}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {course.course.category?.categoryName}
+                              </p>
                             </div>
                           </div>
                           <div className="text-sm text-blue-700">
                             <p>{Math.round(course.progress)}% complete</p>
                             <div className="w-24 bg-blue-200 rounded-full h-2 mt-1">
-                              <div 
+                              <div
                                 className="bg-blue-500 h-2 rounded-full"
                                 style={{ width: `${course.progress}%` }}
                               ></div>
@@ -200,97 +312,81 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Certificates */}
             {certificates.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">My Certificates</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  My Certificates
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {certificates.map(cert => (
-                    <div key={cert.id} className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                  {certificates.map((cert) => (
+                    <Link
+                      key={cert.id}
+                      to={`/certificate?userId=${user?.id}&courseId=${cert?.id}`}
+                      className="border-2 border-green-200 rounded-lg p-4 bg-green-50"
+                    >
                       <div className="flex items-center space-x-3 mb-2">
                         <Award className="h-6 w-6 text-green-600" />
-                        <h3 className="font-medium text-gray-900">{cert.courseName}</h3>
+                        <h3 className="font-medium text-gray-900">
+                          {cert.courseName}
+                        </h3>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
                         Completed: {cert.completedAt.toLocaleDateString()}
                       </p>
-                      {cert.score && (
-                        <p className="text-sm text-gray-600 mb-2">Score: {cert.score}%</p>
+                      {cert && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          Score: {cert.score}%
+                        </p>
                       )}
-                      <p className="text-xs text-gray-500">Certificate ID: {cert.id}</p>
-                    </div>
+                      <p className="text-xs text-gray-500">
+                        Certificate ID: {cert.id}
+                      </p>
+                    </Link>
                   ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Stats */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Your Statistics</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Your Statistics
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <BookOpen className="h-5 w-5 text-blue-500" />
                     <span className="text-gray-600">Courses Enrolled</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{courses.length}</span>
+                  <span className="font-semibold text-gray-900">
+                    {userCourses.length}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Award className="h-5 w-5 text-green-500" />
                     <span className="text-gray-600">Certificates Earned</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{certificates.length}</span>
+                  <span className="font-semibold text-gray-900">
+                    {certificates.length}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Clock className="h-5 w-5 text-blue-500" />
                     <span className="text-gray-600">Study Time</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{Math.round(totalStudyTime)} min</span>
+                  <span className="font-semibold text-gray-900">
+                    {Math.round(totalStudyTime)} min
+                  </span>
                 </div>
               </div>
             </div>
-
-            {/* Account Status */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Status</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Account Active</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Email Verified</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Safety Certified</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button className="w-full text-left p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  Change Password
-                </button>
-                <button className="w-full text-left p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  Download Certificates
-                </button>
-                <button className="w-full text-left p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  Export Learning History
-                </button>
-              </div>
-            </div>
+            <AccountStatus />
+            <ProfileQuickActions />
           </div>
         </div>
       </main>

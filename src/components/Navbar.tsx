@@ -6,6 +6,11 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
 
+  const adminRoles = new Set([
+    "cmf15el060001chpoyrpk5st2",
+    "cmeuae0qi0000chm032g9wp9f",
+  ]);
+
   if (!user || location.pathname === "/") return null;
 
   return (
@@ -51,7 +56,7 @@ export default function Navbar() {
               <User className="h-4 w-4" />
               <span>Profile</span>
             </Link>
-            {user.isAdmin && (
+            {adminRoles.has(user.roleId) && (
               <Link
                 to="/admin"
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors
@@ -68,7 +73,6 @@ export default function Navbar() {
             <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{user.name}</p>
-                <p className="text-gray-500">{user.contractorId}</p>
               </div>
               <button
                 onClick={logout}

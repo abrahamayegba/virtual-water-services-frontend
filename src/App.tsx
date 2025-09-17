@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { CourseProvider } from "./context/CourseContext";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import CourseOverview from "./pages/CourseOverview";
@@ -16,16 +15,20 @@ import TermsOfService from "./pages/TermsOfService";
 import CertificatesPage from "./pages/CertificatesPage";
 import Accreditations from "./pages/Accreditations";
 import ScrollToTop from "./components/ScrollToTop";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <AuthProvider>
-      <CourseProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <Router>
           <ScrollToTop />
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/reset-password" element={<Landing />} />
               <Route path="/accreditations" element={<Accreditations />} />
               <Route
                 path="/dashboard"
@@ -52,7 +55,7 @@ function App() {
                 }
               />
               <Route
-                path="/course/:courseId/quiz"
+                path="/course/:courseId/quiz/:userCourseId"
                 element={
                   <ProtectedRoute>
                     <QuizPage />
@@ -60,7 +63,7 @@ function App() {
                 }
               />
               <Route
-                path="/certificate/:certificateId"
+                path="/certificate"
                 element={
                   <ProtectedRoute>
                     <CertificatePage />
@@ -97,8 +100,8 @@ function App() {
             </Routes>
           </div>
         </Router>
-      </CourseProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

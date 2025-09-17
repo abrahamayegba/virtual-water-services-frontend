@@ -4,7 +4,8 @@ import App from './App.tsx';
 import './index.css';
 
 import { pdfjs } from "react-pdf";
-import { Toaster } from './components/ui/sonner.tsx';
+import { Toaster as SonnerToaster } from './components/ui/sonner.tsx';
+import { Toaster as Toaster } from "@/components/ui/toaster";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -15,6 +16,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
+    <SonnerToaster />
     <Toaster />
   </StrictMode>
 );

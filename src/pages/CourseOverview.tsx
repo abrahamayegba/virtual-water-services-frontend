@@ -1,59 +1,73 @@
-import { useParams, Link } from 'react-router-dom';
-import { useCourses } from '../context/CourseContext';
-import Navbar from '../components/Navbar';
-import { Clock, BookOpen, CheckCircle, PlayCircle, FileText, Video, Presentation, Award } from 'lucide-react';
+import { useParams, Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import { Clock, BookOpen, CheckCircle, PlayCircle, Award } from "lucide-react";
+import { Lesson } from "@/types/types";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getContentIcon,
+  getContentTypeLabel,
+} from "@/components/ContentHelpers";
+import Support from "@/components/Support";
+import LearningObjectives from "@/components/LearningObjectives";
+import CourseDetails from "@/components/CourseDetails";
+import LoadingScreen from "@/components/LoadingScreen";
+import {
+  useCourseCategory,
+  useCourseObjectives,
+  useLessonsWithProgress,
+  useUserCourseByCourseId,
+} from "@/hooks/useUserCourses";
 
 export default function CourseOverview() {
+  const { user } = useAuth();
   const { courseId } = useParams();
-  const { getCourse } = useCourses();
-  
-  const course = getCourse(courseId!);
 
-  if (!course) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Course not found</h1>
-            <Link to="/dashboard" className="text-blue-500 hover:text-blue-600 mt-4 inline-block">
-              Return to Dashboard
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const { data: userCourseResponse, isLoading: userCourseLoading } =
+    useUserCourseByCourseId(user?.id!, courseId!);
 
-  const completedLessons = course.lessons.filter(lesson => lesson.completed);
-  const nextLesson = course.lessons.find(lesson => !lesson.completed);
+  const userCourse = userCourseResponse?.userCourse;
 
-  const getContentIcon = (type: string) => {
-    switch (type) {
-      case 'video': return <Video className="h-5 w-5" />;
-      case 'pdf': return <FileText className="h-5 w-5" />;
-      case 'powerpoint': return <Presentation className="h-5 w-5" />;
-      default: return <BookOpen className="h-5 w-5" />;
-    }
-  };
+  const course = userCourse?.course;
 
-  const getContentTypeLabel = (type: string) => {
-    switch (type) {
-      case 'video': return 'Video';
-      case 'pdf': return 'PDF Document';
-      case 'powerpoint': return 'PowerPoint';
-      default: return 'Content';
-    }
-  };
+  const { data: lessonsResponse, isLoading: lessonsLoading } =
+    useLessonsWithProgress(userCourse?.id!);
+
+  const lessons: Lesson[] = lessonsResponse?.lessons ?? [];
+
+  const { data: category, isLoading: categoryLoading } = useCourseCategory(
+    course?.categoryId
+  );
+  const { data: objectivesResponse, isLoading: objectivesLoading } =
+    useCourseObjectives(course?.id);
+
+  const objectives = objectivesResponse?.objectives;
+
+  const categoryName = category?.categoryName;
+
+  const isLoading =
+    userCourseLoading || lessonsLoading || categoryLoading || objectivesLoading;
+
+  if (isLoading) return <LoadingScreen />;
+  if (!userCourse || !course) return <p>Course not found.</p>;
+
+  const completedLessons = lessons?.filter(
+    (lesson) => lesson.progress?.completed === true
+  );
+  const nextLesson = lessons?.find((l) => !l.progress?.completed);
+
+  const completed = userCourse.completed ?? false;
+  const totalLessons = lessons?.length!;
+  const progress =
+    totalLessons > 0 ? (completedLessons?.length! / totalLessons) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Course Header */}
             <div className="bg-white rounded-lg shadow-sm border p-8 mb-8">
               <div className="mb-6">
                 <div className="flex items-center text-sm text-gray-500 mb-2">
@@ -61,7 +75,7 @@ export default function CourseOverview() {
                     Dashboard
                   </Link>
                   <span className="mx-2">•</span>
-                  <span>{course.category}</span>
+                  <span>{categoryName}</span>
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">
                   {course.title}
@@ -69,7 +83,6 @@ export default function CourseOverview() {
                 <p className="text-lg text-gray-600 mb-6">
                   {course.description}
                 </p>
-
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center space-x-1">
                     <Clock className="h-4 w-4" />
@@ -77,7 +90,7 @@ export default function CourseOverview() {
                   </div>
                   <div className="flex items-center space-x-1">
                     <BookOpen className="h-4 w-4" />
-                    <span>{course.lessons.length} lessons</span>
+                    <span>{lessons?.length} lessons</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Award className="h-4 w-4" />
@@ -86,57 +99,54 @@ export default function CourseOverview() {
                 </div>
               </div>
 
-              {/* Progress Bar */}
+              {/* Progress */}
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-700">
                     Progress
                   </span>
                   <span className="text-sm text-gray-600">
-                    {Math.round(course.progress)}% complete
+                    {Math.round(progress)}% complete
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${course.progress}%` }}
+                    style={{ width: `${progress}%` }}
                   ></div>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  {completedLessons.length} of {course.lessons.length} lessons
+                  {completedLessons?.length} of {lessons?.length} lessons
                   completed
                 </p>
               </div>
 
-              {/* Continue/Start Button */}
-              {nextLesson && (
-                <div className="">
-                  <Link
-                    to={`/course/${course.id}/lesson/${nextLesson.id}`}
-                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center space-x-2"
-                  >
-                    <PlayCircle className="h-5 w-5" />
-                    <span>
-                      {course.progress > 0 ? "Continue Course" : "Start Course"}
-                    </span>
-                  </Link>
-                </div>
+              {/* Continue / Start */}
+              {nextLesson && !completed && (
+                <Link
+                  to={`/course/${course.id}/lesson/${nextLesson.id}`}
+                  className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center space-x-2"
+                >
+                  <PlayCircle className="h-5 w-5" />
+                  <span>
+                    {progress > 0 ? "Continue Course" : "Start Course"}
+                  </span>
+                </Link>
               )}
 
-              {/* Course completed state */}
-              {course.completed && (
+              {/* Completed */}
+              {completed && (
                 <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center space-x-2 text-green-800">
                     <CheckCircle className="h-5 w-5" />
                     <span className="font-medium">Course Completed!</span>
                   </div>
                   <p className="text-green-700 mt-1">
-                    Congratulations! You have successfully completed this
-                    course.
+                    Congratulations! You have completed this course.
                   </p>
-                  {course.certificateId && (
+                  {userCourse.courseId && (
                     <Link
-                      to={`/certificate/${course.certificateId}`}
+                      to={`/certificate/${userCourse.courseId}`}
                       className="inline-block mt-3 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                     >
                       View Certificate
@@ -146,17 +156,17 @@ export default function CourseOverview() {
               )}
             </div>
 
-            {/* Course Curriculum */}
+            {/* Curriculum */}
             <div className="bg-white rounded-lg shadow-sm border p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Course Curriculum
               </h2>
               <div className="space-y-4">
-                {course.lessons.map((lesson, index) => (
+                {lessons?.map((lesson, index) => (
                   <div
                     key={lesson.id}
                     className={`border rounded-lg p-4 transition-colors ${
-                      lesson.completed
+                      lesson.progress.completed
                         ? "bg-green-50 border-green-200"
                         : "bg-gray-50"
                     }`}
@@ -165,12 +175,12 @@ export default function CourseOverview() {
                       <div className="flex items-center space-x-3">
                         <div
                           className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                            lesson.completed
+                            lesson.progress.completed
                               ? "bg-green-500 text-white"
                               : "bg-gray-300 text-gray-600"
                           }`}
                         >
-                          {lesson.completed ? (
+                          {lesson.progress.completed ? (
                             <CheckCircle className="h-4 w-4" />
                           ) : (
                             <span>{index + 1}</span>
@@ -182,36 +192,37 @@ export default function CourseOverview() {
                           </h3>
                           <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                             <div className="flex items-center space-x-1">
-                              {getContentIcon(lesson.type)}
-                              <span>{getContentTypeLabel(lesson.type)}</span>
+                              {getContentIcon(lesson.type.type)}{" "}
+                              <span>
+                                {getContentTypeLabel(lesson.type.type)}
+                              </span>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{lesson.duration} min</span>
-                            </div>
+                            {lesson.duration && (
+                              <div className="flex items-center space-x-1">
+                                <Clock className="h-4 w-4" />
+                                <span>{lesson.duration} min</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
-
-                      {!course.completed && (
+                      {!completed && (
                         <Link
                           to={`/course/${course.id}/lesson/${lesson.id}`}
                           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                            lesson.completed
+                            lesson.progress.completed
                               ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
                               : "bg-blue-500 text-white hover:bg-blue-600"
                           }`}
                         >
-                          {lesson.completed ? "Review" : "Start"}
+                          {lesson.progress.completed ? "Review" : "Start"}
                         </Link>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* Quiz Section */}
-              {course.quiz && (
+              {course.Quizzes && course.Quizzes.length > 0 && (
                 <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-2 mb-2">
                     <Award className="h-5 w-5 text-blue-600" />
@@ -221,13 +232,13 @@ export default function CourseOverview() {
                   </div>
                   <p className="text-blue-800 text-sm mb-3">
                     Complete all lessons to unlock the final quiz. You need{" "}
-                    {course.quiz.passingScore}% to pass and earn your
+                    {course.Quizzes[0].passingScore}% to pass and earn your
                     certificate.
                   </p>
-                  {completedLessons.length === course.lessons.length &&
+                  {completedLessons?.length === lessons?.length &&
                     !course.completed && (
                       <Link
-                        to={`/course/${course.id}/quiz`}
+                        to={`/course/${courseId}/quiz/${userCourse?.id}`}
                         className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
                       >
                         Take Final Quiz
@@ -237,81 +248,16 @@ export default function CourseOverview() {
               )}
             </div>
           </div>
-
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Course Stats */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Course Details
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Duration</span>
-                  <span className="font-medium">{course.duration} min</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Lessons</span>
-                  <span className="font-medium">{course.lessons.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Category</span>
-                  <span className="font-medium">{course.category}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Certificate</span>
-                  <span className="font-medium">Included</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Learning Objectives */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Learning Objectives
-              </h3>
-              {course.objectives && course.objectives.length > 0 ? (
-                <ul className="text-sm text-gray-600 space-y-2">
-                  {course.objectives.map((objective, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>{objective}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  No learning objectives available.
-                </p>
-              )}
-            </div>
-
-            {/* Support */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Need Help?
-              </h3>
-              <div className="space-y-3 text-sm">
-                <Link
-                  to="/support"
-                  className="block text-blue-600 hover:text-blue-700"
-                >
-                  Contact Support
-                </Link>
-                <Link
-                  to="/support"
-                  className="block text-blue-600 hover:text-blue-700"
-                >
-                  Technical Issues
-                </Link>
-                <Link
-                  to="/support"
-                  className="block text-blue-600 hover:text-blue-700"
-                >
-                  Course Content Questions
-                </Link>
-              </div>
-            </div>
+            <CourseDetails
+              duration={course.duration}
+              lessonsCount={lessons?.length!}
+              category={categoryName!}
+              certificate={true} // or dynamic value
+            />
+            <LearningObjectives objectives={objectives!} />
+            <Support />
           </div>
         </div>
       </main>
