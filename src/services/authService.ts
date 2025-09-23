@@ -1,7 +1,9 @@
 import * as authApi from "../api/auth";
-import { API_BASE_URL } from "../api/config"
+import { API_BASE_URL } from "../api/config";
 
 let accessToken: string | null = localStorage.getItem("accessToken");
+
+// console.log(API_BASE_URL);
 
 export function getAccessToken() {
   return accessToken;
@@ -67,7 +69,6 @@ export async function changePassword(data: {
 
   return res.json();
 }
-
 
 // Optional: helper to fetch with auto-refresh
 export async function fetchWithAuth(

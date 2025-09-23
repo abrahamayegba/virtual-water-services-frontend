@@ -15,7 +15,7 @@ import { usePasswordReset } from "@/hooks/usePasswordReset";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import ResetPasswordDialog from "./ResetPasswordDialog";
 import { toast } from "sonner";
-
+import { API_BASE_URL } from "@/api/config";
 interface AuthFormProps {
   isLogin?: boolean;
 }
@@ -33,6 +33,8 @@ export default function AuthForm({
     companyId: "",
     roleId: "",
   });
+
+  console.log(API_BASE_URL)
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
