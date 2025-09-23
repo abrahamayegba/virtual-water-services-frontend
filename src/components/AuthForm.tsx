@@ -34,8 +34,6 @@ export default function AuthForm({
     roleId: "",
   });
 
-  console.log(API_BASE_URL)
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForgotDialog, setShowForgotDialog] = useState(false);
