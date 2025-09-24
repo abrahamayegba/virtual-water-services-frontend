@@ -22,7 +22,7 @@ export async function createCourseObjective(data: {
 
 export async function getCourseObjectivesByCourseId(courseId: string) {
   const res = await fetch(
-    `${API_BASE_URL}/course-objectives?courseId=${courseId}`
+    `${API_BASE_URL}/course-objectives/course/${courseId}`
   );
   if (!res.ok) throw new Error("Failed to fetch course objectives");
   return res.json();

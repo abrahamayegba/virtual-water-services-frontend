@@ -15,7 +15,8 @@ import { usePasswordReset } from "@/hooks/usePasswordReset";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import ResetPasswordDialog from "./ResetPasswordDialog";
 import { toast } from "sonner";
-import { API_BASE_URL } from "@/api/config";
+import ForcePasswordDialog from "./ForcePasswordDialog";
+
 interface AuthFormProps {
   isLogin?: boolean;
 }
@@ -23,7 +24,7 @@ interface AuthFormProps {
 export default function AuthForm({
   isLogin: initialMode = true,
 }: AuthFormProps) {
-  const { login, register } = useAuth();
+  const { login, register, setUser } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(initialMode);
   const [formData, setFormData] = useState({
@@ -42,6 +43,7 @@ export default function AuthForm({
   const [resetUserId, setResetUserId] = useState<string | null>(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [forceDialogOpen, setForceDialogOpen] = useState(false);
 
   const [params, setParams] = useSearchParams();
 
@@ -99,7 +101,6 @@ export default function AuthForm({
       });
     });
   }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -107,9 +108,13 @@ export default function AuthForm({
 
     try {
       if (isLogin) {
-        const success = await login(formData.email, formData.password);
-        if (!success) setError("Invalid email or password");
-        else {
+        const loggedInUser = await login(formData.email, formData.password);
+        if (!loggedInUser) {
+          setError("Invalid email or password");
+        } else if (!loggedInUser.passwordSetAt) {
+          setForceDialogOpen(true);
+          return;
+        } else {
           navigate("/dashboard", { replace: true });
         }
       } else {
@@ -126,13 +131,11 @@ export default function AuthForm({
           roleId: formData.roleId,
         });
         if (!success) setError("Registration failed. Email may already exist.");
-        else {
-          navigate("/dashboard", { replace: true });
-        }
+        else navigate("/dashboard", { replace: true });
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
       console.error("Form submission error", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -325,6 +328,17 @@ export default function AuthForm({
           message={confirmMessage}
           onConfirm={handleConfirmReset}
         />
+
+        <ForcePasswordDialog
+          open={forceDialogOpen}
+          onOpenChange={setForceDialogOpen}
+          onSuccess={(updatedUser) => {
+            setUser(updatedUser);
+            localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+            navigate("/dashboard", { replace: true });
+          }}
+        />
+
         <div className="mt-6 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}

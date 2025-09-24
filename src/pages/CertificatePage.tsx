@@ -1,31 +1,55 @@
 import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { Award, Download, Share, Calendar, FileText } from "lucide-react";
+import {
+  Award,
+  Download,
+  Share,
+  Calendar,
+  FileText,
+  BadgeCheck,
+} from "lucide-react";
 import { Lesson } from "@/types/types";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useUserCourseByCourseId } from "@/hooks/useUserCourses";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 
 export default function CertificatePage() {
   const { user } = useAuth();
+  const certificateRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
   const courseId = searchParams.get("courseId");
+  const [showCertificateForPrint, setShowCertificateForPrint] = useState(false);
+  const promiseResolveRef = useRef<(() => void) | null>(null);
 
   const { data: userCourseResponse, isLoading: userCourseLoading } =
     useUserCourseByCourseId(user?.id!, courseId!);
 
   const userCourse = userCourseResponse?.userCourse;
 
+  useEffect(() => {
+    if (showCertificateForPrint && promiseResolveRef.current) {
+      promiseResolveRef.current();
+      promiseResolveRef.current = null;
+    }
+  }, [showCertificateForPrint]);
+
+  const handlePrint = useReactToPrint({
+    contentRef: certificateRef,
+    documentTitle: `certificate-${userCourse?.id}`,
+    onBeforePrint: () => {
+      return new Promise<void>((resolve) => {
+        promiseResolveRef.current = resolve;
+        setShowCertificateForPrint(true);
+      });
+    },
+    onAfterPrint: () => setShowCertificateForPrint(false),
+  });
+
   const course = userCourse?.course;
 
   const lessons = course?.Lessons;
-
-  const certificate = {
-    courseName: course?.title || "the course",
-    completedAt: new Date(),
-    score: userCourse?.score,
-    id: user?.id,
-  };
 
   if (userCourseLoading) return <LoadingScreen />;
   if (!userCourse) {
@@ -49,41 +73,54 @@ export default function CertificatePage() {
     );
   }
 
-  const handleDownload = () => {
-    // In a real app, this would generate and download a PDF
-    const element = document.createElement("a");
-    const file = new Blob(
-      [
-        `Certificate: ${certificate.courseName}\nAwarded to: ${
-          user?.name
-        }\nDate: ${certificate.completedAt.toLocaleDateString()}`,
-      ],
-      { type: "text/plain" }
-    );
-    element.href = URL.createObjectURL(file);
-    element.download = `certificate-${certificate.id}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
+  // const handleShare = async () => {
+  //   const certificateElement = document.getElementById("certificate-download");
+  //   if (!certificateElement) return;
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Safety Training Certificate - ${certificate.courseName}`,
-          text: `I've completed the ${certificate.courseName} course and earned my safety certification!`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log("Error sharing:", err);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert("Certificate link copied to clipboard!");
-    }
-  };
+  //   // Capture the certificate as a canvas (same as download)
+  //   const canvas = await html2canvas(certificateElement, {
+  //     scale: 2,
+  //     useCORS: true,
+  //     scrollY: -window.scrollY,
+  //     backgroundColor: "#ffffff",
+  //   });
+
+  //   const imgData = canvas.toDataURL("image/png");
+
+  //   // Create PDF with A4 dimensions
+  //   const pdf = new jsPDF({
+  //     orientation: "portrait",
+  //     unit: "mm",
+  //     format: "a4",
+  //   });
+
+  //   const pdfWidth = 210;
+  //   const pdfHeight = 297;
+
+  //   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+  //   // Convert PDF to Blob
+  //   const pdfBlob = pdf.output("blob");
+
+  //   // Wrap in a File with proper name
+  //   const file = new File([pdfBlob], `certificate-${userCourse.id}.pdf`, {
+  //     type: "application/pdf",
+  //   });
+
+  //   if (navigator.canShare && navigator.canShare({ files: [file] })) {
+  //     await navigator.share({
+  //       title: `Certificate - ${userCourse.course.title}`,
+  //       text: `I've completed the ${userCourse.course.title} course!`,
+  //       files: [file],
+  //     });
+  //   } else {
+  //     // fallback: download
+  //     const a = document.createElement("a");
+  //     a.href = URL.createObjectURL(file);
+  //     a.download = file.name;
+  //     a.click();
+  //   }
+  // };
 
   const completedAt = userCourse.completedAt
     ? new Date(userCourse.completedAt).toLocaleDateString("en-US", {
@@ -114,100 +151,181 @@ export default function CertificatePage() {
           </p>
         </div>
 
-        <div className="bg-white shadow-2xl border border-gray-300 rounded-2xl p-12 mb-8 relative overflow-hidden max-w-4xl mx-auto">
-          <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
-          <div className="absolute bottom-0 left-0 w-full h-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+        <div className=" w-full flex items-center justify-center">
+          <div
+            id="certificate-download"
+            className="bg-white w-[250mm] h-[345mm] p-14 relative overflow-hidden"
+            style={{
+              fontFamily: "Georgia, serif",
+              fontSize: "14px",
+              lineHeight: "1.4",
+            }}
+          >
+            {/* Elegant border frame */}
+            <div className="absolute inset-4 border-4 border-blue-900"></div>
+            <div className="absolute inset-6 border border-blue-300"></div>
 
-          <div className="absolute inset-0 flex items-center justify-center opacity-5">
-            <img src="/logo.png" alt="Virtual Water Logo" className="w-96" />
-          </div>
+            {/* Decorative corner elements */}
+            <div className="absolute top-8 left-8 w-16 h-16 border-l-4 border-t-4 border-blue-900 opacity-30"></div>
+            <div className="absolute top-8 right-8 w-16 h-16 border-r-4 border-t-4 border-blue-900 opacity-30"></div>
+            <div className="absolute bottom-8 left-8 w-16 h-16 border-l-4 border-b-4 border-blue-900 opacity-30"></div>
+            <div className="absolute bottom-8 right-8 w-16 h-16 border-r-4 border-b-4 border-blue-900 opacity-30"></div>
 
-          <div className="text-center relative z-10">
-            <div className="mb-8">
-              <img
-                src="/logo.svg"
-                alt="Virtual Water"
-                className="w-[250px] mx-auto mb-4"
-              />
-              <h2 className="text-4xl font-extrabold tracking-wide text-gray-900 mb-2">
-                Certificate of Completion
-              </h2>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-lg text-gray-700 mb-2">
-                This is to certify that
-              </p>
-              <h3 className="text-3xl font-bold text-blue-600 mb-2">
-                {user?.name}
-              </h3>
-              <p className="text-lg text-gray-700">
-                has successfully completed the
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <h4 className="text-2xl font-semibold text-gray-900 mb-3">
-                {/* {userCourse.course.title}  */}
-                Virtual Water Training
-              </h4>
-              <span>on</span>
-              <p className="text-blue-600 max-w-2xl font-bold text-2xl mx-auto mt-2">
-                {/* {userCourse.course.description} */}
-                {userCourse.course.title}
-              </p>
-            </div>
-
-            <div className="mb-12 text-left max-w-3xl mx-auto">
-              <h4 className="text-xl font-bold text-gray-900 mb-4">
-                Training Content Covered
-              </h4>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                {lessons?.map((lesson: Lesson) => (
-                  <li key={lesson.id}>{lesson.title}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex justify-center items-center space-x-16 mb-12 text-sm text-gray-600">
+            {/* Main content */}
+            <div className="relative z-10 h-full flex flex-col justify-between">
+              {/* Header */}
               <div className="text-center">
-                <Calendar className="h-6 w-6 mx-auto mb-2 text-gray-400" />
-                <p className="font-medium">Date Completed</p>
-                <p>{completedAt}</p>
-              </div>
-
-              {userCourse.score && (
-                <div className="text-center">
-                  <Award className="h-6 w-6 mx-auto mb-2 text-gray-400" />
-                  <p className="font-medium">Final Score</p>
-                  <p>{userCourse.score}%</p>
+                <div>
+                  <img
+                    src="/logo.svg"
+                    alt="Virtual Water"
+                    className="w-48 mx-auto mb-4 opacity-90"
+                  />
                 </div>
-              )}
 
-              <div className="text-center">
-                <FileText className="h-6 w-6 mx-auto mb-2 text-gray-400" />
-                <p className="font-medium">Certificate ID</p>
-                <p className="font-mono">{userCourse.id}</p>
+                <h1 className="text-5xl font-bold text-blue-900 mb-2 tracking-wide">
+                  CERTIFICATE
+                </h1>
+                <h2 className="text-2xl text-blue-700 font-light tracking-widest">
+                  OF COMPLETION
+                </h2>
+
+                {/* Decorative line */}
+                <div className="flex items-center justify-center mt-6">
+                  <div className="h-px bg-blue-300 w-24"></div>
+                  <div className="mx-4">
+                    <BadgeCheck className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="h-px bg-blue-300 w-24"></div>
+                </div>
               </div>
-            </div>
 
-            <div className="border-t border-gray-300 pt-8 flex justify-between items-center">
-              <div className="text-start flex flex-col gap-y-3">
-                <p className="font-medium">
-                  Content By: <span className="text-gray-800">Alan Hart</span>
-                </p>
-                <p className="font-medium">
-                  Title:{" "}
-                  <span className="text-gray-800">Water Hygiene Manager</span>
-                </p>
+              {/* Main content */}
+              <div className="flex-1 flex flex-col justify-center text-center">
+                <div className="mb-8">
+                  <p className="text-xl text-gray-700 mb-4 font-light">
+                    This is to certify that
+                  </p>
+                  <h3 className="text-4xl font-bold text-blue-900 mb-6 border-b-2 border-blue-200 pb-2 inline-block">
+                    {user?.name}
+                  </h3>
+                  <p className="text-xl text-gray-700 mb-2 font-light">
+                    has successfully completed the comprehensive training
+                    program
+                  </p>
+                </div>
+
+                <div className="mb-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-600">
+                  <h4 className="text-3xl font-bold text-blue-900 mb-2">
+                    {userCourse.course.title}
+                  </h4>
+                  <p className="text-lg text-blue-700 font-medium">
+                    {userCourse.course.description}
+                  </p>
+                </div>
+
+                {/* Training modules */}
+                <div className="mb-8 text-left mx-auto">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 text-center border-b border-gray-300 pb-2">
+                    Training Modules Completed
+                  </h4>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                    {lessons?.map((lesson: Lesson, index: number) => (
+                      <div
+                        key={lesson.id}
+                        className="flex items-center text-gray-700"
+                      >
+                        <span className="w-6 h-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                          {index + 1}
+                        </span>
+                        <span className="text-sm">{lesson.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer section */}
+              <div className="mt-8">
+                {/* Statistics */}
+                <div className="flex justify-center items-center space-x-12 mb-8 text-sm">
+                  <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                    <Calendar className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                    <p className="font-bold text-gray-900">Date Completed</p>
+                    <p className="text-gray-700">{completedAt}</p>
+                  </div>
+
+                  {userCourse.score && (
+                    <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                      <Award className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                      <p className="font-bold text-gray-900">Final Score</p>
+                      <p className="text-blue-700 font-bold">
+                        {userCourse.score}%
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                    <FileText className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                    <p className="font-bold text-gray-900">Certificate ID</p>
+                    <p className="font-mono text-xs text-gray-700">
+                      {userCourse.id}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Signature section */}
+                <div className="border-t-2 border-gray-200 pt-6">
+                  <div className="flex justify-between items-end">
+                    <div className="text-left">
+                      <div className="border-b border-gray-400 w-48 mb-2"></div>
+                      <p className="text-sm font-bold text-gray-900">
+                        Alan Hart
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        Water Hygiene Manager
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Virtual Water Training Institute
+                      </p>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                        <BadgeCheck className="w-12 h-12 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-gray-500">Official Seal</p>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="border-b border-gray-400 w-48 mb-2"></div>
+                      <p className="text-sm font-bold text-gray-900">
+                        Date Issued
+                      </p>
+                      <p className="text-sm text-gray-700">{completedAt}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Certification Authority
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer note */}
+                <div className="text-center mt-6 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500">
+                    This certificate verifies the successful completion of the
+                    specified training program and demonstrates competency in
+                    the subject matter as of the date issued.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 mt-4">
           <button
-            onClick={handleDownload}
+            onClick={handlePrint}
             className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
           >
             <Download className="h-5 w-5" />
@@ -215,8 +333,9 @@ export default function CertificatePage() {
           </button>
 
           <button
-            onClick={handleShare}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
+            disabled
+            // onClick={handleShare}
+            className="bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
           >
             <Share className="h-5 w-5" />
             <span>Share Certificate</span>
@@ -268,6 +387,174 @@ export default function CertificatePage() {
             <div>
               <p className="text-gray-600">Valid</p>
               <p className="font-medium text-green-600">Lifetime</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          ref={certificateRef}
+          className="bg-white w-[250mm] h-[345mm] p-14 relative mt-5 overflow-hidden"
+          style={{
+            fontFamily: "Georgia, serif",
+            fontSize: "14px",
+            lineHeight: "1.4",
+            display: showCertificateForPrint ? "block" : "none",
+          }}
+        >
+          {/* Elegant border frame */}
+          <div className="absolute inset-4 border-4 border-blue-900"></div>
+          <div className="absolute inset-6 border border-blue-300"></div>
+
+          {/* Decorative corner elements */}
+          <div className="absolute top-8 left-8 w-16 h-16 border-l-4 border-t-4 border-blue-900 opacity-30"></div>
+          <div className="absolute top-8 right-8 w-16 h-16 border-r-4 border-t-4 border-blue-900 opacity-30"></div>
+          <div className="absolute bottom-8 left-8 w-16 h-16 border-l-4 border-b-4 border-blue-900 opacity-30"></div>
+          <div className="absolute bottom-8 right-8 w-16 h-16 border-r-4 border-b-4 border-blue-900 opacity-30"></div>
+
+          {/* Main content */}
+          <div className="relative z-10 h-full flex flex-col justify-between">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="mb-6">
+                <img
+                  src="/logo.svg"
+                  alt="Virtual Water"
+                  className="w-48 mx-auto mb-4 opacity-90"
+                />
+              </div>
+
+              <h1 className="text-5xl font-bold text-blue-900 mb-2 tracking-wide">
+                CERTIFICATE
+              </h1>
+              <h2 className="text-2xl text-blue-700 font-light tracking-widest">
+                OF COMPLETION
+              </h2>
+
+              {/* Decorative line */}
+              <div className="flex items-center justify-center mt-6 mb-8">
+                <div className="h-px bg-blue-300 w-24"></div>
+                <div className="mx-4">
+                  <BadgeCheck className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="h-px bg-blue-300 w-24"></div>
+              </div>
+            </div>
+
+            {/* Main content */}
+            <div className="flex-1 flex flex-col justify-center text-center">
+              <div className="mb-8">
+                <p className="text-xl text-gray-700 mb-4 font-light">
+                  This is to certify that
+                </p>
+                <h3 className="text-4xl font-bold text-blue-900 mb-6 border-b-2 border-blue-200 pb-2 inline-block">
+                  {user?.name}
+                </h3>
+                <p className="text-xl text-gray-700 mb-2 font-light">
+                  has successfully completed the comprehensive training program
+                </p>
+              </div>
+
+              <div className="mb-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-600">
+                <h4 className="text-3xl font-bold text-blue-900 mb-2">
+                  {userCourse.course.title}
+                </h4>
+                <p className="text-lg text-blue-700 font-medium">
+                  {userCourse.course.description}
+                </p>
+              </div>
+
+              {/* Training modules */}
+              <div className="mb-8 text-left max-w-4xl mx-auto">
+                <h4 className="text-xl font-bold text-gray-900 mb-4 text-center border-b border-gray-300 pb-2">
+                  Training Modules Completed
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {lessons?.map((lesson: Lesson, index: number) => (
+                    <div
+                      key={lesson.id}
+                      className="flex items-center text-gray-700"
+                    >
+                      <span className="w-6 h-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm">{lesson.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer section */}
+            <div className="mt-8">
+              {/* Statistics */}
+              <div className="flex justify-center items-center space-x-12 mb-8 text-sm">
+                <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                  <Calendar className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                  <p className="font-bold text-gray-900">Date Completed</p>
+                  <p className="text-gray-700">{completedAt}</p>
+                </div>
+
+                {userCourse.score && (
+                  <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                    <Award className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                    <p className="font-bold text-gray-900">Final Score</p>
+                    <p className="text-blue-700 font-bold">
+                      {userCourse.score}%
+                    </p>
+                  </div>
+                )}
+
+                <div className="text-center bg-gray-50 p-4 rounded-lg min-w-[120px]">
+                  <FileText className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                  <p className="font-bold text-gray-900">Certificate ID</p>
+                  <p className="font-mono text-xs text-gray-700">
+                    {userCourse.id}
+                  </p>
+                </div>
+              </div>
+
+              {/* Signature section */}
+              <div className="border-t-2 border-gray-200 pt-6">
+                <div className="flex justify-between items-end">
+                  <div className="text-left">
+                    <div className="border-b border-gray-400 w-48 mb-2"></div>
+                    <p className="text-sm font-bold text-gray-900">Alan Hart</p>
+                    <p className="text-sm text-gray-700">
+                      Water Hygiene Manager
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Virtual Water Training Institute
+                    </p>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                      <BadgeCheck className="w-12 h-12 text-blue-600" />
+                    </div>
+                    <p className="text-xs text-gray-500">Official Seal</p>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="border-b border-gray-400 w-48 mb-2"></div>
+                    <p className="text-sm font-bold text-gray-900">
+                      Date Issued
+                    </p>
+                    <p className="text-sm text-gray-700">{completedAt}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Certification Authority
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer note */}
+              <div className="text-center mt-6 pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  This certificate verifies the successful completion of the
+                  specified training program and demonstrates competency in the
+                  subject matter as of the date issued.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -31,6 +31,7 @@ export default function Dashboard() {
   if (!user) {
     return <Navigate to="/" replace />;
   }
+  
   const [searchTerm, setSearchTerm] = useState("");
 
 

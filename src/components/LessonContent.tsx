@@ -23,7 +23,7 @@ export default function LessonContent({ lesson }: LessonContentProps) {
     case "ppt":
       return (
         <PDFViewer
-          file={lesson.file ?? "/legionella-course.pdf"}
+          file={lesson.file ?? "/legionella-awareness-revised.pdf"}
           title={lesson.title}
         />
       );
@@ -31,7 +31,12 @@ export default function LessonContent({ lesson }: LessonContentProps) {
       if (lesson.file) {
         return <PDFViewer file={lesson.file} title={lesson.title} />;
       }
-      return <PDFViewer file={"/legionella-course.pdf"} title={lesson.title} />;
+      return (
+        <PDFViewer
+          file={"/legionella-awareness-revised.pdf"}
+          title={lesson.title}
+        />
+      );
     default:
       return (
         <div className="bg-gray-100 rounded-lg p-8 min-h-96 flex items-center justify-center">

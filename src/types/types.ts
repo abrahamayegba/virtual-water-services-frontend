@@ -114,6 +114,11 @@ export interface CourseCategory {
   categoryName: string;
 }
 
+export interface CourseCategoryResponse {
+  success: boolean;
+  category: CourseCategory;
+}
+
 // Question option
 export interface QuestionOption {
   id: string;
@@ -243,7 +248,7 @@ export interface VideoPlayerProps {
 export interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<User | null>; // changed here
   register: (userData: {
     name: string;
     email: string;
@@ -259,4 +264,11 @@ export interface CourseObjectivesResponse {
   success: boolean;
   objectives: CourseObjective[];
 };
+
+export interface LoginResponse {
+  success: boolean;
+  user: User | null;
+  accessToken?: string;
+  sessionId?: string;
+}
 

@@ -18,18 +18,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<User | null> => {
     try {
       const res = await authService.loginUser(email, password);
       if (res.success && res.user) {
-        setUser(res.user);
-        localStorage.setItem("currentUser", JSON.stringify(res.user));
-        return true;
+        // ⬇️ only commit the user if they've already set a password
+        if (res.user.passwordSetAt) {
+          setUser(res.user);
+          localStorage.setItem("currentUser", JSON.stringify(res.user));
+          if (res.accessToken) {
+            setAccessToken(res.accessToken);
+          }
+        }
+        return res.user; // return user object so AuthForm can decide
       }
-      return false;
+      return null;
     } catch (err) {
       console.error("Login failed", err);
-      return false;
+      setUser(null);
+      return null;
     }
   };
 

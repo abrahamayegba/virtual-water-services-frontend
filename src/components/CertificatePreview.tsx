@@ -32,7 +32,7 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
         "{certificate.courseName}"
       </h5>
 
-      <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-4">
+      {/* <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-4">
         <div className="text-center">
           <Calendar className="h-4 w-4 mx-auto mb-1" />
           <p className="font-medium">Date Completed</p>
@@ -52,7 +52,7 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
           <p className="font-medium">Certificate ID</p>
           <p className="font-mono text-xs">{certificate.id}</p>
         </div>
-      </div>
+      </div> */}
 
       <div className="border-t pt-4">
         <p className="text-sm text-gray-600">Virtual Water Services Ltd</p>

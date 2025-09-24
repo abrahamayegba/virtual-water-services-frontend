@@ -37,12 +37,13 @@ export default function CourseOverview() {
   const { data: category, isLoading: categoryLoading } = useCourseCategory(
     course?.categoryId
   );
+
   const { data: objectivesResponse, isLoading: objectivesLoading } =
     useCourseObjectives(course?.id);
 
   const objectives = objectivesResponse?.objectives;
 
-  const categoryName = category?.categoryName;
+  const categoryName = category?.category?.categoryName
 
   const isLoading =
     userCourseLoading || lessonsLoading || categoryLoading || objectivesLoading;

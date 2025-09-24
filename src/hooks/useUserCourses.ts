@@ -10,6 +10,7 @@ import type {
   CourseCategory,
   CourseObjectivesResponse,
   Quiz,
+  CourseCategoryResponse,
 } from "@/types/types";
 import { getCompletedCoursesByUserId } from "@/api/userCourseLesson";
 import { getLessonById } from "@/api/courseLessons";
@@ -81,7 +82,7 @@ export function useCompletedCourses(userId: string) {
 }
 
 export function useCourseCategory(categoryId: string | undefined) {
-  return useQuery<CourseCategory>({
+  return useQuery<CourseCategoryResponse>({
     queryKey: ["courseCategory", categoryId],
     queryFn: () => getCourseCategoryById(categoryId!),
     enabled: !!categoryId,
