@@ -220,7 +220,8 @@ export default function CertificatePage() {
                     <FileText className="h-5 w-5 mx-auto mb-2 text-blue-600" />
                     <p className="font-bold text-gray-900">Certificate ID</p>
                     <p className="font-mono text-xs text-gray-700">
-                      {userCourse.id}
+                      {userCourse.id.slice(0, 8).toUpperCase()}-
+                      {userCourse.id.slice(8, 12).toUpperCase()}
                     </p>
                   </div>
                 </div>
@@ -318,7 +319,10 @@ export default function CertificatePage() {
             </div>
             <div>
               <p className="text-gray-600">Certificate ID</p>
-              <p className="font-medium font-mono">{userCourse.id}</p>
+              <p className="font-medium font-mono">
+                {userCourse.id.slice(0, 8).toUpperCase()}-
+                {userCourse.id.slice(8, 12).toUpperCase()}
+              </p>
             </div>
             {userCourse.score && (
               <div>
@@ -332,7 +336,11 @@ export default function CertificatePage() {
             </div>
             <div>
               <p className="text-gray-600">User ID</p>
-              <p className="font-medium">{user?.id}</p>
+              <p className="font-medium">
+                {" "}
+                {user?.id.slice(0, 8).toUpperCase()}-
+                {user?.id.slice(8, 12).toUpperCase()}
+              </p>
             </div>
             <div>
               <p className="text-gray-600">Valid</p>
@@ -458,7 +466,8 @@ export default function CertificatePage() {
                   <FileText className="h-5 w-5 mx-auto mb-2 text-blue-600" />
                   <p className="font-bold text-gray-900">Certificate ID</p>
                   <p className="font-mono text-xs text-gray-700">
-                    {userCourse.id}
+                    {userCourse.id.slice(0, 8).toUpperCase()}-
+                    {userCourse.id.slice(8, 12).toUpperCase()}
                   </p>
                 </div>
               </div>

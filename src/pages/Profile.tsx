@@ -350,7 +350,8 @@ export default function Profile() {
                         </p>
                       )}
                       <p className="text-xs text-gray-500">
-                        Certificate ID: {cert.id}
+                        Certificate ID: {cert.id.slice(0, 8).toUpperCase()}-
+                        {cert.id.slice(8, 12).toUpperCase()}
                       </p>
                     </Link>
                   ))}

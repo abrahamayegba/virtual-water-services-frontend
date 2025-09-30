@@ -155,7 +155,8 @@ export default function CertificatesPage() {
                       <div className="text-xs text-gray-500">
                         Certificate ID:{" "}
                         <span className=" uppercase font-medium tracking-wide">
-                          {certificate.id}
+                          {certificate.id.slice(0, 8).toUpperCase()}-
+                          {certificate.id.slice(8, 12).toUpperCase()}
                         </span>
                       </div>
                     </div>
