@@ -73,55 +73,6 @@ export default function CertificatePage() {
     );
   }
 
-  // const handleShare = async () => {
-  //   const certificateElement = document.getElementById("certificate-download");
-  //   if (!certificateElement) return;
-
-  //   // Capture the certificate as a canvas (same as download)
-  //   const canvas = await html2canvas(certificateElement, {
-  //     scale: 2,
-  //     useCORS: true,
-  //     scrollY: -window.scrollY,
-  //     backgroundColor: "#ffffff",
-  //   });
-
-  //   const imgData = canvas.toDataURL("image/png");
-
-  //   // Create PDF with A4 dimensions
-  //   const pdf = new jsPDF({
-  //     orientation: "portrait",
-  //     unit: "mm",
-  //     format: "a4",
-  //   });
-
-  //   const pdfWidth = 210;
-  //   const pdfHeight = 297;
-
-  //   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-  //   // Convert PDF to Blob
-  //   const pdfBlob = pdf.output("blob");
-
-  //   // Wrap in a File with proper name
-  //   const file = new File([pdfBlob], `certificate-${userCourse.id}.pdf`, {
-  //     type: "application/pdf",
-  //   });
-
-  //   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-  //     await navigator.share({
-  //       title: `Certificate - ${userCourse.course.title}`,
-  //       text: `I've completed the ${userCourse.course.title} course!`,
-  //       files: [file],
-  //     });
-  //   } else {
-  //     // fallback: download
-  //     const a = document.createElement("a");
-  //     a.href = URL.createObjectURL(file);
-  //     a.download = file.name;
-  //     a.click();
-  //   }
-  // };
-
   const completedAt = userCourse.completedAt
     ? new Date(userCourse.completedAt).toLocaleDateString("en-US", {
         year: "numeric",
@@ -334,7 +285,6 @@ export default function CertificatePage() {
 
           <button
             disabled
-            // onClick={handleShare}
             className="bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
           >
             <Share className="h-5 w-5" />

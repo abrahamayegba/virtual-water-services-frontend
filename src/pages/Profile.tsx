@@ -277,35 +277,46 @@ export default function Profile() {
                       Courses in Progress
                     </h3>
                     <div className="space-y-3">
-                      {inProgressCourses.map((course) => (
-                        <div
-                          key={course.id}
-                          className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                              <BookOpen className="h-4 w-4 text-white" />
+                      {inProgressCourses.map((course) => {
+                        const lessons = userProgressByCourse[course.id] ?? [];
+                        const completedLessons = lessons.filter(
+                          (l) => l.progress.completed
+                        ).length;
+                        const progressPercent = lessons.length
+                          ? (completedLessons / lessons.length) * 100
+                          : 0;
+
+                        return (
+                          <div
+                            key={course.id}
+                            className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <BookOpen className="h-4 w-4 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {course.course.title}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {course.course.category?.categoryName ??
+                                    "General"}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {course.course.title}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {course.course.category?.categoryName}
-                              </p>
+                            <div className="text-sm text-blue-700">
+                              <p>{Math.round(progressPercent)}% complete</p>
+                              <div className="w-24 bg-blue-200 rounded-full h-2 mt-1">
+                                <div
+                                  className="bg-blue-500 h-2 rounded-full"
+                                  style={{ width: `${progressPercent}%` }}
+                                ></div>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-sm text-blue-700">
-                            <p>{Math.round(course.progress)}% complete</p>
-                            <div className="w-24 bg-blue-200 rounded-full h-2 mt-1">
-                              <div
-                                className="bg-blue-500 h-2 rounded-full"
-                                style={{ width: `${course.progress}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

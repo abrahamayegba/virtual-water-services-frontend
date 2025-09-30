@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-
 import { pdfjs } from "react-pdf";
 import { Toaster as SonnerToaster } from "./components/ui/sonner.tsx";
 import { Toaster as Toaster } from "@/components/ui/toaster";

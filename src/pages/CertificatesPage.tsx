@@ -3,20 +3,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import {
-  Award,
-  Download,
-  Share,
-  Search,
-  Eye,
-  FileText,
-} from "lucide-react";
-import { Company, UserCourse } from "@/types/types";
+import { Award, Download, Search, Eye, FileText } from "lucide-react";
+import { UserCourse } from "@/types/types";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useUserCourses } from "@/hooks/useUserCourses";
-import { useCompanies } from "@/hooks/useGetCompanies&Roles";
 import { CertificatePreview } from "@/components/CertificatePreview";
-import { handleDownload, handleShare } from "@/lib/utils";
 
 export default function CertificatesPage() {
   const { user } = useAuth();
@@ -29,18 +20,7 @@ export default function CertificatesPage() {
 
   const userCourses = userCoursesQuery.data?.userCourses ?? [];
 
-  const companiesQuery = useCompanies();
-
-  const companiesData = companiesQuery.data;
-
-  const userCompany = companiesData?.companies.find(
-    (c: Company) => c.id === user?.companyId
-  );
-
-  const companyName = userCompany?.companyName ?? "";
-
-  if (userCoursesQuery.isLoading || companiesQuery.isLoading)
-    return <LoadingScreen />;
+  if (userCoursesQuery.isLoading) return <LoadingScreen />;
 
   const certificates = (userCourses || [])
     .filter((userCourse: UserCourse) => userCourse.completed)
@@ -173,33 +153,10 @@ export default function CertificatesPage() {
 
                     <div className="flex items-center justify-between gap-x-4">
                       <div className="text-xs text-gray-500">
-                        Certificate ID: <br /> {certificate.id}
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(
-                              certificate,
-                              user?.name!,
-                              companyName
-                            );
-                          }}
-                          className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors flex items-center space-x-1"
-                        >
-                          <Download className="h-3 w-3" />
-                          <span>Download</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(certificate);
-                          }}
-                          className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center space-x-1"
-                        >
-                          <Share className="h-3 w-3" />
-                          <span>Share</span>
-                        </button>
+                        Certificate ID:{" "}
+                        <span className=" uppercase font-medium tracking-wide">
+                          {certificate.id}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -225,21 +182,13 @@ export default function CertificatesPage() {
                       >
                         View Full Certificate
                       </Link>
-                      <button
-                        onClick={() =>
-                          handleDownload(
-                            certificates.find(
-                              (c: any) => c.id === selectedCertificate
-                            ),
-                            user?.name!,
-                            companyName
-                          )
-                        }
+                      <Link
+                        to={`/certificate?userId=${user?.id}&courseId=${selectedCert?.id}`}
                         className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
                       >
                         <Download className="h-4 w-4" />
                         <span>Download</span>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ) : (
