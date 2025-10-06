@@ -18,22 +18,18 @@ import ContinueLearning from "@/components/ContinueLearning";
 import RecentCertificatesAndProgress from "@/components/RecentCertificatesAndProgress";
 import { getContentIcon } from "@/components/ContentHelpers";
 import LoadingScreen from "@/components/LoadingScreen";
-import {
-  useUserCourses,
-  useUserCourseLessons,
-} from "../hooks/useUserCourses";
+import { useUserCourses, useUserCourseLessons } from "../hooks/useUserCourses";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
 
-  if (loading) return <LoadingScreen/>;
+  if (loading) return <LoadingScreen />;
 
   if (!user) {
     return <Navigate to="/" replace />;
   }
-  
-  const [searchTerm, setSearchTerm] = useState("");
 
+  const [searchTerm, setSearchTerm] = useState("");
 
   const userCoursesQuery = useUserCourses(user.id);
   const userCourses = userCoursesQuery.data?.userCourses ?? [];
@@ -59,7 +55,7 @@ export default function Dashboard() {
     id: course.courseId,
     courseName: course.course.title,
     completedAt: new Date(),
-    score: course?.score
+    score: course?.score,
   }));
 
   const availableCourses = userCourses.filter((uc) => !uc.completed);
@@ -80,8 +76,7 @@ export default function Dashboard() {
   );
 
   const isLoading =
-    userCoursesQuery.isLoading ||
-    lessonsResponses.some((res) => res.isLoading);
+    userCoursesQuery.isLoading || lessonsResponses.some((res) => res.isLoading);
 
   if (isLoading) return <LoadingScreen />;
 
@@ -96,6 +91,7 @@ export default function Dashboard() {
           <p className="text-gray-600 mt-2">
             Continue your safety training journey
           </p>
+          <button>NEW BUTTON</button>
         </div>
 
         {/* Stats */}
