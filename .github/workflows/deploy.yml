@@ -4,51 +4,45 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  deploy-frontend:
+  deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout frontend repo
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
 
-      - name: Clean remote dist folder
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            rm -rf /home/ubuntu/virtual-water-services-frontend/dist/*
-
-      - name: Copy frontend to EC2
-        uses: appleboy/scp-action@v0.1.6
+      - name: Copy dist to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           source: "dist/*"
-          target: "/home/ubuntu/virtual-water-services-frontend/dist"
+          target: "/home/ubuntu/virtual-water-services-frontend/"
+          strip_components: 1
+          rm: true
 
-      - name: SSH and restart frontend PM2
-        uses: appleboy/ssh-action@v0.1.7
+      - name: Restart application
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
             cd /home/ubuntu/virtual-water-services-frontend
-            pm2 restart frontend || pm2 start "serve -s dist -l 3000" --name frontend
-            pm2 save
+            pm2 restart virtual-water-frontend || pm2 start npm --name "virtual-water-frontend" -- start

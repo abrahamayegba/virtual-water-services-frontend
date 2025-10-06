@@ -1,9 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  base: "/", // ensures root-relative paths
+  build: {
+    outDir: "dist", // output folder is dist (no nested dist)
+    emptyOutDir: true, // cleans dist before building
+  },
   plugins: [react()],
   assetsInclude: ["**/*.pdf"],
   define: {
