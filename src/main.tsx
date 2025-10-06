@@ -8,6 +8,8 @@ import { Toaster as Toaster } from "@/components/ui/toaster";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
+// Test deploy: updated at 6 Oct
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
