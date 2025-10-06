@@ -1,10 +1,9 @@
-name: Deploy Frontend to EC2
+name: Deploy Frontend
 
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main   # or your deployment branch
 
 jobs:
   deploy:
@@ -12,41 +11,29 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Set frontend environment
-        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
+        run: npm install
 
       - name: Build frontend
         run: npm run build
 
-      - name: Copy frontend to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "dist/*"
-          target: "/home/ubuntu/virtual-water-services-frontend/"
-          strip_components: 1
-          rm: true
-
-      - name: Restart frontend
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd /home/ubuntu/virtual-water-services-frontend
-            pm2 restart virtual-water-frontend || pm2 start "serve -s . -l 3000" --name virtual-water-frontend
-            pm2 save
+            cd /home/ubuntu/virtual-water-frontend
+            git reset --hard
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart virtualwater-frontend || pm2 start "serve -s dist -l 3000" --name virtualwater-frontend
