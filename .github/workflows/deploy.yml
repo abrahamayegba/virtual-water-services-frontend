@@ -26,7 +26,7 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Copy dist to EC2
+      - name: Copy frontend to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -37,7 +37,7 @@ jobs:
           strip_components: 1
           rm: true
 
-      - name: Restart application
+      - name: Restart frontend
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -45,4 +45,5 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             cd /home/ubuntu/virtual-water-services-frontend
-            pm2 restart virtual-water-frontend || pm2 start npm --name "virtual-water-frontend" -- start
+            pm2 restart virtual-water-frontend || pm2 start "serve -s . -l 3000" --name virtual-water-frontend
+            pm2 save
