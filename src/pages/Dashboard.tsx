@@ -82,7 +82,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navbar /> */}
+      <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[725px]">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -91,7 +91,6 @@ export default function Dashboard() {
           <p className="text-gray-600 mt-2">
             Continue your safety training journey
           </p>
-          <button>NEW BUTTON</button>
         </div>
 
         {/* Stats */}
@@ -246,7 +245,7 @@ export default function Dashboard() {
           />
         </div>
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 }
