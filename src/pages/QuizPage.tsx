@@ -21,16 +21,26 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const [showResults, setShowResults] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem(`quiz-${courseId}-${user?.id}-time`);
+    return saved ? Number(saved) : 300;
+  });
 
   useEffect(() => {
+    localStorage.setItem(
+      `quiz-${courseId}-${user?.id}-time`,
+      timeLeft.toString()
+    );
+
     if (timeLeft <= 0) {
       handleSubmitQuiz();
       return;
     }
+
     const timerId = setTimeout(() => {
       setTimeLeft(timeLeft - 1);
     }, 1000);
+
     return () => clearTimeout(timerId);
   }, [timeLeft]);
 

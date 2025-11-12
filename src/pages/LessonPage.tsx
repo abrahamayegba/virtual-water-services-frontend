@@ -116,6 +116,7 @@ export default function LessonPage() {
       await queryClient.invalidateQueries({
         queryKey: ["lessonsWithProgress", userCourse?.id],
       });
+      localStorage.removeItem(`quiz-${courseId}-${user?.id}-time`);
       toast("Lesson completed successfully!", {
         description:
           "You have finished the lesson and your progress has been saved.",
