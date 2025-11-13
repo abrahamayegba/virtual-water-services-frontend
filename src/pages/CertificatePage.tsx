@@ -8,12 +8,13 @@ import {
   FileText,
   BadgeCheck,
 } from "lucide-react";
-import { Lesson } from "@/types/types";
+import { Company, Lesson } from "@/types/types";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useUserCourseByCourseId } from "@/hooks/useUserCourses";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
+import { useCompanies } from "@/hooks/useGetCompanies&Roles";
 
 export default function CertificatePage() {
   const { user } = useAuth();
@@ -25,6 +26,16 @@ export default function CertificatePage() {
 
   const { data: userCourseResponse, isLoading: userCourseLoading } =
     useUserCourseByCourseId(user?.id!, courseId!);
+
+  const companiesQuery = useCompanies();
+
+  const companiesData = companiesQuery.data;
+
+  const userCompany = companiesData?.companies.find(
+    (c: Company) => c.id === user?.companyId
+  );
+
+  const companyName = userCompany?.companyName ?? "";
 
   const userCourse = userCourseResponse?.userCourse;
 
@@ -157,9 +168,12 @@ export default function CertificatePage() {
                   <p className="text-xl text-gray-700 mb-4 font-light">
                     This is to certify that
                   </p>
-                  <h3 className="text-4xl font-bold text-blue-900 mb-6 border-b-2 border-blue-200 pb-2 inline-block">
+                  <h3 className="text-4xl font-bold text-blue-900 mb-2 border-b-2 border-blue-200 pb-2 inline-block">
                     {user?.name}
                   </h3>
+                  <p className="text-lg text-blue-700 font-medium mb-6">
+                    {companyName}
+                  </p>
                   <p className="text-xl text-gray-700 mb-2 font-light">
                     has successfully completed the comprehensive training
                     program
@@ -284,14 +298,6 @@ export default function CertificatePage() {
             <span>Download PDF</span>
           </button>
 
-          <button
-            disabled
-            className="bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
-          >
-            <Share className="h-5 w-5" />
-            <span>Share Certificate</span>
-          </button>
-
           <Link
             to="/dashboard"
             className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2"
@@ -404,9 +410,12 @@ export default function CertificatePage() {
                 <p className="text-xl text-gray-700 mb-4 font-light">
                   This is to certify that
                 </p>
-                <h3 className="text-4xl font-bold text-blue-900 mb-6 border-b-2 border-blue-200 pb-2 inline-block">
+                <h3 className="text-4xl font-bold text-blue-900 mb-2 border-b-2 border-blue-200 pb-2 inline-block">
                   {user?.name}
                 </h3>
+                <p className="text-lg text-blue-700 font-medium mb-6">
+                  {companyName}
+                </p>
                 <p className="text-xl text-gray-700 mb-2 font-light">
                   has successfully completed the comprehensive training program
                 </p>

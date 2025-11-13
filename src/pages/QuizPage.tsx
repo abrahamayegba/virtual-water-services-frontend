@@ -17,32 +17,32 @@ export default function QuizPage() {
 
   const { quiz, isLoading } = useQuizByCourseId(courseId);
 
+  const QUIZ_DURATION = 600;
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(() => {
     const saved = localStorage.getItem(`quiz-${courseId}-${user?.id}-time`);
-    return saved ? Number(saved) : 300;
+    return saved ? Number(saved) : QUIZ_DURATION;
   });
 
   useEffect(() => {
+    // stop timer if results are shown or time runs out
+    if (showResults || timeLeft <= 0) {
+      if (timeLeft <= 0) handleSubmitQuiz();
+      return;
+    }
+
+    const timerId = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     localStorage.setItem(
       `quiz-${courseId}-${user?.id}-time`,
       timeLeft.toString()
     );
 
-    if (timeLeft <= 0) {
-      handleSubmitQuiz();
-      return;
-    }
-
-    const timerId = setTimeout(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-
     return () => clearTimeout(timerId);
-  }, [timeLeft]);
+  }, [timeLeft, showResults]);
 
   const questions: QuizQuestion[] = quiz?.Questions
     ? quiz.Questions.map((q: Question) => {
@@ -76,6 +76,14 @@ export default function QuizPage() {
     setAnswers((prev) => ({ ...prev, [questionId]: answerId }));
   };
 
+  const resetQuizState = () => {
+    setAnswers({});
+    setCurrentQuestion(0);
+    setShowResults(false);
+    setTimeLeft(QUIZ_DURATION);
+    localStorage.removeItem(`quiz-${courseId}-${user?.id}-time`);
+  };
+
   const handleSubmitQuiz = async () => {
     const correctAnswers = questions.reduce((count, question) => {
       const userAnswerIndex = question.options.findIndex(
@@ -92,6 +100,7 @@ export default function QuizPage() {
     }
 
     if (passed) {
+      localStorage.removeItem(`quiz-${courseId}-${user?.id}-time`);
       await updateUserCourseByUserId(user!.id, userCourseId, {
         courseId,
         score,
@@ -137,12 +146,7 @@ export default function QuizPage() {
         answers={answers}
         quizPassingScore={quiz.passingScore}
         courseId={courseId!}
-        onRetake={() => {
-          setAnswers({});
-          setCurrentQuestion(0);
-          setShowResults(false);
-          setTimeLeft(300);
-        }}
+        onRetake={resetQuizState}
       />
     );
   }
@@ -151,13 +155,11 @@ export default function QuizPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Final Assessment
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">Course Test</h1>
               <p className="text-gray-600">{quiz.course.title}</p>
             </div>
             <div className="flex items-center space-x-4">
@@ -210,7 +212,7 @@ export default function QuizPage() {
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      className={`w-6 h-6 flex-shrink-0 rounded-full border-2 flex items-center justify-center ${
                         answers[currentQuestionItem.id] === option.id
                           ? "border-blue-500 bg-blue-500"
                           : "border-gray-300"

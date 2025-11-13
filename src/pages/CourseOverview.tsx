@@ -43,7 +43,7 @@ export default function CourseOverview() {
 
   const objectives = objectivesResponse?.objectives;
 
-  const categoryName = category?.category?.categoryName
+  const categoryName = category?.category?.categoryName;
 
   const isLoading =
     userCourseLoading || lessonsLoading || categoryLoading || objectivesLoading;
@@ -227,12 +227,10 @@ export default function CourseOverview() {
                 <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-2 mb-2">
                     <Award className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-medium text-blue-900">
-                      Final Assessment
-                    </h3>
+                    <h3 className="font-medium text-blue-900">Course Test</h3>
                   </div>
                   <p className="text-blue-800 text-sm mb-3">
-                    Complete all lessons to unlock the final quiz. You need{" "}
+                    Complete all lessons to unlock the Course Test. You need{" "}
                     {course.Quizzes[0].passingScore}% to pass and earn your
                     certificate.
                   </p>
@@ -242,7 +240,7 @@ export default function CourseOverview() {
                         to={`/course/${courseId}/quiz/${userCourse?.id}`}
                         className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
                       >
-                        Take Final Quiz
+                        Take Course Test
                       </Link>
                     )}
                 </div>

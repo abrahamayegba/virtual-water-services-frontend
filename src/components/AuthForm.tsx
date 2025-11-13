@@ -16,6 +16,7 @@ import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import ResetPasswordDialog from "./ResetPasswordDialog";
 import { toast } from "sonner";
 import ForcePasswordDialog from "./ForcePasswordDialog";
+import { Eye, EyeOff } from "lucide-react";
 
 interface AuthFormProps {
   isLogin?: boolean;
@@ -44,6 +45,7 @@ export default function AuthForm({
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [forceDialogOpen, setForceDialogOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [params, setParams] = useSearchParams();
 
@@ -178,7 +180,7 @@ export default function AuthForm({
           </div>
 
           <div>
-            <div className=" flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 Password
               </label>
@@ -193,15 +195,25 @@ export default function AuthForm({
               )}
             </div>
 
-            <input
-              type="password"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, password: e.target.value }))
-              }
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, password: e.target.value }))
+                }
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {!isLogin && (
