@@ -163,65 +163,82 @@ export default function CourseOverview() {
                 Course Curriculum
               </h2>
               <div className="space-y-4">
-                {lessons?.map((lesson, index) => (
-                  <div
-                    key={lesson.id}
-                    className={`border rounded-lg p-4 transition-colors ${
-                      lesson.progress.completed
-                        ? "bg-green-50 border-green-200"
-                        : "bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                            lesson.progress.completed
-                              ? "bg-green-500 text-white"
-                              : "bg-gray-300 text-gray-600"
-                          }`}
-                        >
-                          {lesson.progress.completed ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <span>{index + 1}</span>
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {lesson.title}
-                          </h3>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                            <div className="flex items-center space-x-1">
-                              {getContentIcon(lesson.type.type)}{" "}
-                              <span>
-                                {getContentTypeLabel(lesson.type.type)}
-                              </span>
-                            </div>
-                            {lesson.duration && (
-                              <div className="flex items-center space-x-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{lesson.duration} min</span>
-                              </div>
+                {lessons?.map((lesson, index) => {
+                  const firstIncompleteIndex = lessons.findIndex(
+                    (l) => !l.progress.completed
+                  );
+                  const isNextAvailable = index === firstIncompleteIndex;
+
+                  return (
+                    <div
+                      key={lesson.id}
+                      className={`border rounded-lg p-4 transition-colors ${
+                        lesson.progress.completed
+                          ? "bg-green-50 border-green-200"
+                          : "bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                              lesson.progress.completed
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-300 text-gray-600"
+                            }`}
+                          >
+                            {lesson.progress.completed ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <span>{index + 1}</span>
                             )}
                           </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {lesson.title}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                              <div className="flex items-center space-x-1">
+                                {getContentIcon(lesson.type.type)}{" "}
+                                <span>
+                                  {getContentTypeLabel(lesson.type.type)}
+                                </span>
+                              </div>
+                              {lesson.duration && (
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{lesson.duration} min</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      {!completed && (
                         <Link
-                          to={`/course/${course.id}/lesson/${lesson.id}`}
+                          to={
+                            lesson.progress.completed
+                              ? `/course/${course.id}/lesson/${lesson.id}` // always link to review
+                              : isNextAvailable
+                              ? `/course/${course.id}/lesson/${lesson.id}` // start next lesson
+                              : "#"
+                          }
                           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                             lesson.progress.completed
                               ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                              : "bg-blue-500 text-white hover:bg-blue-600"
+                              : isNextAvailable
+                              ? "bg-blue-500 text-white hover:bg-blue-600"
+                              : "bg-gray-300 text-gray-400 cursor-not-allowed"
                           }`}
                         >
-                          {lesson.progress.completed ? "Review" : "Start"}
+                          {lesson.progress.completed
+                            ? "Review"
+                            : isNextAvailable
+                            ? "Start"
+                            : "Locked"}
                         </Link>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {course.Quizzes && course.Quizzes.length > 0 && (
                 <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -230,9 +247,9 @@ export default function CourseOverview() {
                     <h3 className="font-medium text-blue-900">Course Test</h3>
                   </div>
                   <p className="text-blue-800 text-sm mb-3">
-                    Complete all lessons to unlock the Course Test. You need{" "}
-                    {course.Quizzes[0].passingScore}% to pass and earn your
-                    certificate.
+                    Please complete all lessons to unlock the Course Test. A
+                    minimum score of {course.Quizzes[0].passingScore}% is
+                    required to pass and receive your certificate
                   </p>
                   {completedLessons?.length === lessons?.length &&
                     !course.completed && (

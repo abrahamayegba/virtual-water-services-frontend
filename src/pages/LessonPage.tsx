@@ -9,10 +9,9 @@ import {
   getUserCourseLessonByUserCourseAndLesson,
   updateUserCourseLesson,
 } from "@/api/userCourseLesson";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Support from "@/components/Support";
 import { Lesson } from "@/types/types";
-import KeyTakeaways from "@/components/KeyTakeaways";
 import { useQueryClient } from "@tanstack/react-query";
 import LessonContent from "@/components/LessonContent";
 import { toast } from "sonner";
@@ -23,6 +22,7 @@ import {
   useLessonsWithProgress,
   useUserCourseByCourseId,
 } from "@/hooks/useUserCourses";
+import { VideoPlayerRef } from "@/components/VideoPlayer";
 
 export default function LessonPage() {
   const { user } = useAuth();
@@ -31,24 +31,54 @@ export default function LessonPage() {
   const { toast: OldToast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [spentTime, setSpentTime] = useState(() => {
-    const saved = localStorage.getItem(`lesson-${lessonId}-${user?.id}-time`);
-    return saved ? Number(saved) : 0;
-  });
+  const [spentTime, setSpentTime] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   useEffect(() => {
-    const start = Date.now() - spentTime * 1000; // continue from saved time
+    if (!lessonId || !user?.id) return;
+
+    const savedStart = localStorage.getItem(
+      `lesson-${lessonId}-${user.id}-start`
+    );
+    const savedSpent = localStorage.getItem(
+      `lesson-${lessonId}-${user.id}-time`
+    );
+
+    if (savedStart) {
+      const start = Number(savedStart);
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      setSpentTime(elapsed);
+      setTimerActive(true);
+    } else if (savedSpent) {
+      setSpentTime(Number(savedSpent));
+    }
+  }, [lessonId, user?.id]);
+
+  useEffect(() => {
+    if (!timerActive || !lessonId || !user?.id) return;
+
+    if (!localStorage.getItem(`lesson-${lessonId}-${user.id}-start`)) {
+      localStorage.setItem(
+        `lesson-${lessonId}-${user.id}-start`,
+        Date.now().toString()
+      );
+    }
+
     const interval = setInterval(() => {
+      const start = Number(
+        localStorage.getItem(`lesson-${lessonId}-${user.id}-start`)
+      );
       const elapsed = Math.floor((Date.now() - start) / 1000);
       setSpentTime(elapsed);
       localStorage.setItem(
-        `lesson-${lessonId}-${user?.id}-time`,
+        `lesson-${lessonId}-${user.id}-time`,
         elapsed.toString()
       );
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lessonId, user?.id]);
+  }, [timerActive, lessonId, user?.id]);
 
   const { data: userCourseResponse, isLoading: userCourseLoading } =
     useUserCourseByCourseId(user?.id!, courseId!);
@@ -88,12 +118,19 @@ export default function LessonPage() {
 
   const isUserCourseCompleted = userCourse?.completed;
 
-  const canMarkComplete = spentTime >= (lesson?.duration ?? 5) * 60;
+  const canMarkComplete =
+    timerActive && spentTime >= (lesson?.duration ?? 5) * 60;
+
+  const handleStartVideo = () => {
+    setTimerActive(true);
+    if (lesson?.type?.type === "Video") {
+      videoPlayerRef.current?.play();
+    }
+  };
 
   const handleCompleteLesson = async () => {
     try {
       setMarkAsCompleteLoading(true);
-      // Try to get the existing userCourseLesson for this user and lesson
       const { userCourseLesson } =
         await getUserCourseLessonByUserCourseAndLesson(
           userCourse?.id!,
@@ -101,17 +138,15 @@ export default function LessonPage() {
         );
 
       if (!userCourseLesson) {
-        // Create it if it doesn't exist yet
         await createUserCourseLesson({
           userCourseId: userCourse?.id!,
           lessonId: lesson?.id!,
           completed: true,
           completedAt: new Date(),
           spentTime: spentTime,
-          startedAt: new Date(Date.now() - spentTime * 1000), // approximate startedAt
+          startedAt: new Date(Date.now() - spentTime * 1000),
         });
       } else {
-        // Update if it exists
         await updateUserCourseLesson(userCourseLesson.id, {
           completed: true,
           spentTime: spentTime,
@@ -125,8 +160,10 @@ export default function LessonPage() {
       await queryClient.invalidateQueries({
         queryKey: ["lessonsWithProgress", userCourse?.id],
       });
-      localStorage.removeItem(`quiz-${courseId}-${user?.id}-time`);
+
+      localStorage.removeItem(`lesson-${lessonId}-${user?.id}-start`);
       localStorage.removeItem(`lesson-${lessonId}-${user?.id}-time`);
+
       toast("Lesson completed successfully!", {
         description:
           "You have finished the lesson and your progress has been saved.",
@@ -147,6 +184,7 @@ export default function LessonPage() {
       });
     } finally {
       setSpentTime(0);
+      setTimerActive(false);
       setMarkAsCompleteLoading(false);
     }
   };
@@ -215,7 +253,11 @@ export default function LessonPage() {
           {/* Main */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm border p-8 mb-8">
-              <LessonContent lesson={lesson!} />
+              <LessonContent
+                ref={videoPlayerRef}
+                lesson={lesson!}
+                onPlay={() => setTimerActive(true)}
+              />
             </div>
 
             {/* Navigation */}
@@ -238,10 +280,16 @@ export default function LessonPage() {
                 {!currentLessonProgress?.completed &&
                   !isUserCourseCompleted && (
                     <button
-                      disabled={markAsCompleteLoading || !canMarkComplete}
-                      onClick={handleCompleteLesson}
+                      disabled={
+                        markAsCompleteLoading ||
+                        (timerActive && !canMarkComplete)
+                      }
+                      onClick={
+                        !timerActive ? handleStartVideo : handleCompleteLesson
+                      }
                       className={`bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 ${
-                        markAsCompleteLoading || !canMarkComplete
+                        markAsCompleteLoading ||
+                        (timerActive && !canMarkComplete)
                           ? "opacity-50 cursor-not-allowed"
                           : ""
                       }`}
@@ -250,6 +298,8 @@ export default function LessonPage() {
                       <span>
                         {markAsCompleteLoading
                           ? "Marking..."
+                          : !timerActive
+                          ? "Start Video"
                           : !canMarkComplete
                           ? (() => {
                               const remaining =
@@ -268,8 +318,15 @@ export default function LessonPage() {
               <div className="flex-1 flex justify-end">
                 {nextLesson ? (
                   <Link
-                    to={`/course/${courseId}/lesson/${nextLesson.id}`}
-                    className={`px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors
+                    to={
+                      currentLessonProgress?.completed
+                        ? `/course/${courseId}/lesson/${nextLesson.id}`
+                        : "#" // disabled
+                    }
+                    className={`px-6 py-2 rounded-lg text-white transition-colors ${
+                      currentLessonProgress?.completed
+                        ? "bg-blue-500 hover:bg-blue-600"
+                        : "bg-gray-300 cursor-not-allowed"
                     }`}
                   >
                     Next Lesson
@@ -278,8 +335,7 @@ export default function LessonPage() {
                   lessons.every((l) => l.progress.completed) ? (
                   <Link
                     to={`/course/${courseId}/quiz/${userCourseId}`}
-                    className={`px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors
-                    }`}
+                    className={`px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors`}
                   >
                     Take Course Test
                   </Link>
@@ -299,7 +355,7 @@ export default function LessonPage() {
                   <div key={l.id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                        className={`w-6 h-6 flex-none rounded-full flex items-center justify-center text-xs font-medium ${
                           l.progress.completed
                             ? "bg-green-500 text-white"
                             : l.id === lessonId
@@ -313,6 +369,7 @@ export default function LessonPage() {
                           i + 1
                         )}
                       </div>
+
                       <span
                         className={`text-sm ${
                           l.id === lessonId
@@ -323,6 +380,7 @@ export default function LessonPage() {
                         {l.title}
                       </span>
                     </div>
+
                     {l.duration && (
                       <span className="text-xs text-gray-500">
                         {l.duration}m
@@ -330,14 +388,17 @@ export default function LessonPage() {
                     )}
                   </div>
                 ))}
+
                 {quizzes && (
                   <div className="flex items-center justify-between pt-2 border-t">
                     <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                      <div className="w-6 h-6 flex-none rounded-full bg-purple-500 flex items-center justify-center">
                         <CheckCircle className="h-3 w-3 text-white" />
                       </div>
+
                       <span className="text-sm text-gray-600">Course Test</span>
                     </div>
+
                     <span className="text-xs text-gray-500">10m</span>
                   </div>
                 )}

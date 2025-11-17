@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import {
   Award,
   Download,
-  Share,
   Calendar,
   FileText,
   BadgeCheck,
@@ -243,19 +242,27 @@ export default function CertificatePage() {
                 {/* Signature section */}
                 <div className="border-t-2 border-gray-200 pt-6">
                   <div className="flex justify-between items-end">
+                    {/* Signature */}
                     <div className="text-left">
-                      <div className="border-b border-gray-400 w-48 mb-2"></div>
+                      <div className="mb-2 pb-2 border-b border-gray-400">
+                        <img
+                          src="/signature.jpg" // replace with your actual path
+                          alt="Alan Hart Signature"
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
                       <p className="text-sm font-bold text-gray-900">
                         Alan Hart
                       </p>
                       <p className="text-sm text-gray-700">
-                        Water Hygiene Manager
+                        Business Unit Director
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Virtual Water Training Institute
+                        Virtual Water Services Ltd
                       </p>
                     </div>
 
+                    {/* Seal */}
                     <div className="text-center">
                       <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-2">
                         <BadgeCheck className="w-12 h-12 text-blue-600" />
@@ -263,8 +270,9 @@ export default function CertificatePage() {
                       <p className="text-xs text-gray-500">Official Seal</p>
                     </div>
 
+                    {/* Date */}
                     <div className="text-right">
-                      <div className="border-b border-gray-400 w-48 mb-2"></div>
+                      <div className="border-b border-gray-400 w-32 mb-2"></div>
                       <p className="text-sm font-bold text-gray-900">
                         Date Issued
                       </p>
@@ -488,7 +496,7 @@ export default function CertificatePage() {
                     <div className="border-b border-gray-400 w-48 mb-2"></div>
                     <p className="text-sm font-bold text-gray-900">Alan Hart</p>
                     <p className="text-sm text-gray-700">
-                      Water Hygiene Manager
+                      Business Unit Director
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       Virtual Water Training Institute

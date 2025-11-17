@@ -243,6 +243,7 @@ export interface RecentCertificatesAndProgressProps {
 export interface VideoPlayerProps {
   src: string | File;
   title?: string;
+  onPlay?: () => void; // new prop
 }
 
 export interface AuthContextType {
