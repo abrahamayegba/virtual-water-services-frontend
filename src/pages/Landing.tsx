@@ -73,7 +73,7 @@ export default function Landing() {
                   Certified Training
                 </h3>
                 <p className="text-gray-600">
-                  Industry-recognized certificates upon successful course
+                  Industry-recognised certificates upon successful course
                   completion
                 </p>
               </div>
@@ -93,7 +93,7 @@ export default function Landing() {
                   Equipment Training
                 </h3>
                 <p className="text-gray-600">
-                  Specialized training for heavy machinery and equipment
+                  Specialised training for heavy machinery and equipment
                   operation
                 </p>
               </div>

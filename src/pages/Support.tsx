@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { toast } from "sonner";
-import {
-  Phone,
-  Mail,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+import { Phone, Mail, ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 
@@ -47,9 +42,9 @@ export default function Support() {
         "There's no time limit to complete courses. You can learn at your own pace and your progress is saved automatically. However, we recommend completing courses within 30 days for the best learning experience.",
     },
     {
-      question: "Are my certificates recognized by employers?",
+      question: "Are my certificates recognised by employers?",
       answer:
-        "Yes! Our safety training certificates are industry-recognized and meet OSHA standards. Many employers accept our certifications as proof of safety training completion.",
+        "Our safety training certificates are industry standard. Many employers accept our certifications as proof of safety training completion.",
     },
     {
       question: "What if I have technical issues?",
